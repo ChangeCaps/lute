@@ -15,7 +15,7 @@ pkgs.stdenv.mkDerivation {
     pkgs.pkg-config
   ];
 
-  depsBuildInputs = [
+  depsBuildBuild = [
     pkgs.pkg-config
   ];
 
