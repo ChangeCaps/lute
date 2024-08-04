@@ -14,6 +14,10 @@ pkgs.stdenv.mkDerivation {
     pkgs.makeWrapper
   ];
 
+  buildInputs = [
+    pkgs.pkg-config
+  ];
+
   buildPhase = ''
     make clean all
   '';
