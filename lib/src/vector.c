@@ -1,13 +1,9 @@
 // Copyright (C) 2024  Hjalte C. Nannestad
 // See end of file for license information.
 
-#include <stdlib.h>
 #include <string.h>
 
 #include "lute/vector.h"
-
-void __vec_free(void *data) { free(data); }
-void *__vec_realloc(void *data, size_t size) { return realloc(data, size); }
 
 char *__vec_join(const char **data, size_t len, const char *sep) {
     char *str = NULL;

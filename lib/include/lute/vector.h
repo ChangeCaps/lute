@@ -4,6 +4,7 @@
 #pragma once
 
 #include <stddef.h>
+#include <stdlib.h>
 
 #define Vec(type)                                                              \
     struct {                                                                   \
@@ -21,7 +22,7 @@
 
 #define vec_free(vec)                                                          \
     do {                                                                       \
-        __vec_free((vec)->data);                                               \
+        free((vec)->data);                                                     \
         (vec)->data = NULL;                                                    \
         (vec)->len = 0;                                                        \
         (vec)->cap = 0;                                                        \
@@ -30,8 +31,7 @@
 #define vec_grow(vec)                                                          \
     do {                                                                       \
         (vec)->cap = (vec)->cap * 2 + 1;                                       \
-        (vec)->data =                                                          \
-            __vec_realloc((vec)->data, sizeof(*(vec)->data) * (vec)->cap);     \
+        (vec)->data = realloc((vec)->data, sizeof(*(vec)->data) * (vec)->cap); \
     } while (0)
 
 #define vec_push(vec, elem)                                                    \
@@ -49,8 +49,6 @@
 
 #define vec_join(vec, sep) __vec_join((vec)->data, (vec)->len, sep)
 
-void __vec_free(void *ptr);
-void *__vec_realloc(void *ptr, size_t size);
 char *__vec_join(const char **data, size_t len, const char *sep);
 
 // This file is part of Lute.
