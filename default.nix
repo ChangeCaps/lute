@@ -28,6 +28,8 @@ pkgs.stdenv.mkDerivation {
 
     mkdir -p $out/bin
     cp -r out/lute $out/bin 
+    cp -r lib/include $out/bin
+    cp -r out/lib/liblute.so $out/bin
 
     mkdir -p $lib
     cp -r out/lib/liblute.so $lib
@@ -54,7 +56,9 @@ pkgs.stdenv.mkDerivation {
 
   postFixup = ''
     wrapProgram $out/bin/lute \
-      --prefix PATH : "${pkgs.lib.makeBinPath [ pkgs.pkg-config ]}"
+      --prefix PATH : "${pkgs.lib.makeBinPath [ pkgs.pkg-config ]}" \
+      --prefix LUTE_CFLAGS : "-I$out/bin/include" \
+      --prefix LUTE_LIBS : "-L$out/bin -llute" \
   '';
 
   meta = {

@@ -7,21 +7,21 @@
 #include "command.h"
 #include "load.h"
 
-static bool get_lute_build_flags(char **flags) {
-    const char *env = getenv("LUTE_BUILD_FLAGS");
+static bool get_lute_build_flags(char **cflags, char **libs) {
+    const char *env_cflags = getenv("LUTE_CFLAGS");
+    const char *env_libs = getenv("LUTE_LIBS");
 
-    if (env) {
-        *flags = strdup(env);
+    if (env_cflags && env_libs) {
+        *cflags = strdup(env_cflags);
+        *libs = strdup(env_libs);
         return true;
     }
 
     Package lute_package;
     package_init(&lute_package, "lute");
 
-    size_t len = strlen(lute_package.cflags) + strlen(lute_package.libs) + 2;
-    *flags = malloc(len);
-
-    snprintf(*flags, len, "%s %s", lute_package.cflags, lute_package.libs);
+    *cflags = strdup(lute_package.cflags);
+    *libs = strdup(lute_package.libs);
 
     free(lute_package.cflags);
 
@@ -32,21 +32,25 @@ bool build_load(Build *build, const char *path) {
     Args args;
     vec_init(&args);
 
-    char *flags;
-    if (!get_lute_build_flags(&flags))
+    char *cflags;
+    char *libs;
+
+    if (!get_lute_build_flags(&cflags, &libs))
         return false;
 
     vec_push(&args, "clang");
     vec_push(&args, "-shared");
     vec_push(&args, path);
-    vec_push(&args, flags);
+    vec_push(&args, cflags);
+    vec_push(&args, libs);
     vec_push(&args, "-o");
     vec_push(&args, "out/build.so");
 
     bool success = execute(&args);
     vec_free(&args);
 
-    free(flags);
+    free(cflags);
+    free(libs);
 
     if (!success)
         return false;
