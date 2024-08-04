@@ -79,6 +79,12 @@ Package *build_add_package(Build *build, const char *name) {
 }
 
 Path *build_add_path(Build *build, const char *path) {
+    // if the path already exists, return it
+    vec_foreach(&build->paths, build_path) {
+        if (strcmp(build_path->path, path) == 0)
+            return build_path;
+    }
+
     FileKind kind = SOURCE;
 
     struct stat st;
@@ -89,9 +95,12 @@ Path *build_add_path(Build *build, const char *path) {
     } else {
         char *ext = strrchr(path, '.');
 
-        if (strcmp(ext, ".h") == 0 || strcmp(ext, ".hpp") == 0) {
+        if (strcmp(ext, ".c") == 0 || strcmp(ext, ".cpp") == 0)
+            kind = SOURCE;
+        else if (strcmp(ext, ".h") == 0 || strcmp(ext, ".hpp") == 0)
             kind = HEADER;
-        }
+        else
+            return NULL;
     }
 
     Path new_path;
@@ -104,7 +113,11 @@ void build_add_paths(Build *build, const char *path, Paths *paths) {
     DIR *dir = opendir(path);
 
     if (dir == NULL) {
-        vec_push(paths, build_add_path(build, path));
+        Path *new_path = build_add_path(build, path);
+
+        if (new_path)
+            vec_push(paths, new_path);
+
         return;
     }
 
