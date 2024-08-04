@@ -42,8 +42,6 @@ bool build_load(Build *build, const char *path) {
     vec_push(&args, flags);
     vec_push(&args, "-o");
     vec_push(&args, "out/build.so");
-    vec_push(&args, "-I");
-    vec_push(&args, "lib/include");
 
     bool success = execute(&args);
     vec_free(&args);

@@ -27,20 +27,20 @@ pkgs.stdenv.mkDerivation {
     runHook preInstall
 
     mkdir -p $out/bin
-    cp -r out/lute $out/bin
-
-    mkdir -p $out/include
-    cp -r lib/include/* $out/include/
+    cp -r out/lute $out/bin 
 
     mkdir -p $lib
     cp -r out/lib/liblute.so $lib
+
+    mkdir -p $dev
+    cp -r lib/include $dev/include
 
     mkdir -p $dev/lib/pkgconfig
     cat > $dev/lib/pkgconfig/lute.pc <<EOF
     prefix=$out
     exec_prefix=$out
     libdir=$lib
-    includedir=$out/include
+    includedir=$dev/include
 
     Name: lute
     Description: A build system for C and C++ projects
@@ -54,8 +54,7 @@ pkgs.stdenv.mkDerivation {
 
   postFixup = ''
     wrapProgram $out/bin/lute \
-      --prefix PATH : "${pkgs.lib.makeBinPath [ pkgs.pkg-config ]}" \
-      --set LUTE_BUILD_FLAGS "-I$out/include -L$lib -llute" 
+      --prefix PATH : "${pkgs.lib.makeBinPath [ pkgs.pkg-config ]}"
   '';
 
   meta = {
