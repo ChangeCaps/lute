@@ -3,8 +3,7 @@
 
 #pragma once
 
-#include <stdlib.h>
-#include <string.h>
+#include <stddef.h>
 
 #define vec(type)                                                              \
     struct {                                                                   \
