@@ -12,6 +12,7 @@ pkgs.stdenv.mkDerivation {
     pkgs.clang
     pkgs.gnumake
     pkgs.makeWrapper
+    pkgs.pkg-config
   ];
 
   depsBuildInputs = [
