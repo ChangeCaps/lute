@@ -19,13 +19,13 @@ static bool is_alphanumeric(char c) {
 }
 
 bool is_valid_target_name(const char *name) {
-    if (is_alphabetic(name[0]))
+    if (!is_alphabetic(name[0]))
         return false;
 
     for (size_t i = 0; i < strlen(name); i++) {
         char c = name[i];
 
-        if (is_alphanumeric(c) || c == '_' || c == '-')
+        if (!is_alphanumeric(c) || c == '_' || c == '-')
             return false;
     }
 
