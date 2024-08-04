@@ -56,7 +56,7 @@ pkgs.stdenv.mkDerivation {
 
   postFixup = ''
     wrapProgram $out/bin/lute \
-      --prefix PATH : "${pkgs.lib.makeBinPath [ pkgs.pkg-config pkgs.clang ]}" \
+      --prefix PATH : "${pkgs.lib.makeBinPath [ pkgs.pkg-config ]}" \
       --prefix LUTE_CFLAGS : "-I$out/bin/include" \
       --prefix LUTE_LIBS : "-L$out/bin -llute" \
   '';
