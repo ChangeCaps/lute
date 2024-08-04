@@ -22,7 +22,7 @@ typedef struct {
 
 void path_free(Path *source);
 
-typedef vec(Path *) Paths;
+typedef Vec(Path *) Paths;
 
 // This file is part of Lute.
 // Copyright (C) 2024  Hjalte C. Nannestad

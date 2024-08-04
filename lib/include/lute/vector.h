@@ -5,7 +5,7 @@
 
 #include <stddef.h>
 
-#define vec(type)                                                              \
+#define Vec(type)                                                              \
     struct {                                                                   \
         type *data;                                                            \
         size_t len;                                                            \
@@ -21,25 +21,17 @@
 
 #define vec_free(vec)                                                          \
     do {                                                                       \
-        free((vec)->data);                                                     \
+        __vec_free((vec)->data);                                               \
         (vec)->data = NULL;                                                    \
         (vec)->len = 0;                                                        \
         (vec)->cap = 0;                                                        \
     } while (0)
 
-#define vec_free_with(vec, free_elem)                                          \
-    do {                                                                       \
-        for (size_t i = 0; i < (vec)->len; i++) {                              \
-            free_elem((vec)->data[i]);                                         \
-            free((vec)->data[i]);                                              \
-        }                                                                      \
-        vec_free(vec);                                                         \
-    } while (0)
-
 #define vec_grow(vec)                                                          \
     do {                                                                       \
         (vec)->cap = (vec)->cap * 2 + 1;                                       \
-        (vec)->data = realloc((vec)->data, sizeof(*(vec)->data) * (vec)->cap); \
+        (vec)->data =                                                          \
+            __vec_realloc((vec)->data, sizeof(*(vec)->data) * (vec)->cap);     \
     } while (0)
 
 #define vec_push(vec, elem)                                                    \
@@ -56,6 +48,9 @@
          __i++)
 
 #define vec_join(vec, sep) __vec_join((vec)->data, (vec)->len, sep)
+
+void __vec_free(void *ptr);
+void *__vec_realloc(void *ptr, size_t size);
 char *__vec_join(const char **data, size_t len, const char *sep);
 
 // This file is part of Lute.

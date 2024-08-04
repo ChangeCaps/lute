@@ -6,6 +6,9 @@
 
 #include "lute/vector.h"
 
+void __vec_free(void *data) { free(data); }
+void *__vec_realloc(void *data, size_t size) { return realloc(data, size); }
+
 char *__vec_join(const char **data, size_t len, const char *sep) {
     char *str = NULL;
     size_t new_len = 0;

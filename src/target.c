@@ -1,6 +1,8 @@
 // Copyright (C) 2024  Hjalte C. Nannestad
 // See end of file for license information.
 
+#include <string.h>
+
 #include "target.h"
 
 Target *select_target(Build *build, const char *name) {

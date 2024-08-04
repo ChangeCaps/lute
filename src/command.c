@@ -2,6 +2,7 @@
 // See end of file for license information.
 
 #include <errno.h>
+#include <stdlib.h>
 
 #include "command.h"
 

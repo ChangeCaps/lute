@@ -11,7 +11,7 @@ typedef struct {
     char *libs;
 } Package;
 
-typedef vec(Package *) Packages;
+typedef Vec(Package *) Packages;
 
 void package_init(Package *package, const char *name);
 void package_free(Package *package);

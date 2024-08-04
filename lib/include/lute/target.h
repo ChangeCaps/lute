@@ -39,7 +39,7 @@ typedef struct {
     Packages packages;
 } Target;
 
-typedef vec(Target *) Targets;
+typedef Vec(Target *) Targets;
 
 void target_init(Target *target, const char *name, Output kind, void *build);
 void target_free(Target *target);

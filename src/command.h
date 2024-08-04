@@ -7,7 +7,7 @@
 
 #include <lute/vector.h>
 
-typedef vec(const char *) Args;
+typedef Vec(const char *) Args;
 
 bool execute(const Args *args);
 
