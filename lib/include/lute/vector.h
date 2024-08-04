@@ -5,6 +5,7 @@
 
 #include <stddef.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define __vec_concat(a, b) __CONCAT(a, b)
 #define __vec_i __vec_concat(__i, __LINE__)
@@ -53,7 +54,27 @@
 
 #define vec_join(vec, sep) __vec_join((vec)->data, (vec)->len, sep)
 
-char *__vec_join(const char **data, size_t len, const char *sep);
+inline char *__vec_join(const char **data, size_t len, const char *sep) {
+    char *str = NULL;
+    size_t new_len = 0;
+
+    for (size_t i = 0; i < len; i++) {
+        new_len += strlen(data[i]) + strlen(sep);
+    }
+
+    str = malloc(new_len + 1);
+    str[0] = '\0';
+
+    for (size_t i = 0; i < len; i++) {
+        strcat(str, data[i]);
+
+        if (i < len - 1) {
+            strcat(str, sep);
+        }
+    }
+
+    return str;
+}
 
 // This file is part of Lute.
 // Copyright (C) 2024  Hjalte C. Nannestad
