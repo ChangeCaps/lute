@@ -14,7 +14,7 @@ pkgs.stdenv.mkDerivation {
     pkgs.makeWrapper
   ];
 
-  buildInputs = [
+  depsBuildInputs = [
     pkgs.pkg-config
   ];
 
@@ -53,8 +53,7 @@ pkgs.stdenv.mkDerivation {
 
   postFixup = ''
     wrapProgram $out/bin/lute \
-      --set PATH ${pkgs.lib.makeBinPath [ pkgs.pkg-config ]} \
-      --set PKG_CONFIG_PATH $dev/lib/pkgconfig
+      --set PATH ${pkgs.lib.makeBinPath [ pkgs.pkg-config ]}
   '';
 
   meta = {
