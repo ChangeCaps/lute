@@ -33,7 +33,7 @@ int run_command(Build *build, int argc, char **argv) {
     // loop through the arguments, all arguments after the first instance of
     // "--" are passed to the target
     bool is_args = false;
-    for (int i = 3; i < argc; i++) {
+    for (int i = 2; i < argc; i++) {
         // if we haven't seen "--" yet, and the current argument is "--", we
         // set `is_args` and continue
         if (!is_args && strcmp(argv[i], "--") == 0) {
