@@ -25,7 +25,7 @@ bool is_valid_target_name(const char *name) {
     for (size_t i = 0; i < strlen(name); i++) {
         char c = name[i];
 
-        if (!is_alphanumeric(c) || c == '_' || c == '-')
+        if (!(is_alphanumeric(c) || c == '_' || c == '-'))
             return false;
     }
 
