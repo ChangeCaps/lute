@@ -2,18 +2,14 @@
 // See end of file for license information.
 
 #include <stdio.h>
+#include <string.h>
 
 #include "build.h"
 #include "run.h"
 #include "target.h"
 
 int run_command(Build *build, int argc, char **argv) {
-    char *target_name = NULL;
-
-    if (argc >= 3) {
-        target_name = argv[2];
-    }
-
+    char *target_name = get_target_name(argc, argv);
     Target *target = select_target(build, target_name);
 
     if (!target) {
@@ -34,14 +30,24 @@ int run_command(Build *build, int argc, char **argv) {
     vec_init(&args);
     vec_push(&args, output);
 
-    if (!execute(&args)) {
-        vec_free(&args);
-        return 1;
+    // loop through the arguments, all arguments after the first instance of
+    // "--" are passed to the target
+    bool is_args = false;
+    for (int i = 3; i < argc; i++) {
+        // if we haven't seen "--" yet, and the current argument is "--", we
+        // set `is_args` and continue
+        if (!is_args && strcmp(argv[i], "--") == 0) {
+            is_args = true;
+            continue;
+        } else if (is_args) {
+            vec_push(&args, argv[i]);
+        }
     }
 
+    bool success = execute(&args);
     vec_free(&args);
 
-    return 0;
+    return success ? 0 : 1;
 }
 
 // This file is part of Lute.

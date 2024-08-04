@@ -8,12 +8,7 @@
 #include "util.h"
 
 int build_command(Build *build, int argc, char **argv) {
-    char *target_name = NULL;
-
-    if (argc >= 3) {
-        target_name = argv[2];
-    }
-
+    char *target_name = get_target_name(argc, argv);
     Target *target = select_target(build, target_name);
 
     if (!target) {

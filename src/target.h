@@ -5,6 +5,7 @@
 
 #include <lute/lute.h>
 
+char *get_target_name(int argc, char **argv);
 Target *select_target(Build *build, const char *name);
 
 // This file is part of Lute.

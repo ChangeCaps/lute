@@ -8,7 +8,27 @@
 #include "lute/build.h"
 #include "lute/target.h"
 
+bool is_valid_target_name(const char *name) {
+    if (name[0] < 'a' || name[0] > 'Z')
+        return false;
+
+    for (size_t i = 0; i < strlen(name); i++) {
+        char c = name[i];
+
+        if (c < 33 || c > 126 || c == '/' || c == '\\' || c == '$' ||
+            c == '`' || c == '"' || c == '\'')
+            return false;
+    }
+
+    return true;
+}
+
 void target_init(Target *target, const char *name, Output kind, void *build) {
+    if (!is_valid_target_name(name)) {
+        printf("Error: Invalid target name: %s\n", name);
+        exit(1);
+    }
+
     target->name = strdup(name);
     target->output = kind;
     target->warn = 0;

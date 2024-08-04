@@ -41,6 +41,8 @@ typedef struct {
 
 typedef Vec(Target *) Targets;
 
+bool is_valid_target_name(const char *name);
+
 void target_init(Target *target, const char *name, Output kind, void *build);
 void target_free(Target *target);
 

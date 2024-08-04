@@ -5,6 +5,14 @@
 
 #include "target.h"
 
+char *get_target_name(int argc, char **argv) {
+    if (argc >= 3 && is_valid_target_name(argv[2])) {
+        return argv[2];
+    }
+
+    return NULL;
+}
+
 Target *select_target(Build *build, const char *name) {
     if (!name && build->targets.len > 0) {
         return build->targets.data[0];
