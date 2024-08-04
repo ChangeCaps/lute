@@ -38,13 +38,13 @@ bool build_load(Build *build, const char *path) {
     if (!get_lute_build_flags(&cflags, &libs))
         return false;
 
-    vec_push(&args, "clang");
-    vec_push(&args, "-shared");
+    vec_push(&args, build->cc);
     vec_push(&args, path);
-    vec_push(&args, cflags);
-    vec_push(&args, libs);
     vec_push(&args, "-o");
     vec_push(&args, "out/build.so");
+    vec_push(&args, "-shared");
+    vec_push(&args, cflags);
+    vec_push(&args, libs);
 
     bool success = execute(&args);
     vec_free(&args);
