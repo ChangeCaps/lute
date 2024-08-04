@@ -53,7 +53,8 @@ pkgs.stdenv.mkDerivation {
 
   postFixup = ''
     wrapProgram $out/bin/lute \
-      --set PATH ${pkgs.lib.makeBinPath [ pkgs.pkg-config ]}
+      --set PATH ${pkgs.lib.makeBinPath [ pkgs.pkg-config ]} \
+      --set PKG_CONFIG_PATH $dev/lib/pkgconfig
   '';
 
   meta = {
