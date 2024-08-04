@@ -7,18 +7,39 @@
 #include "command.h"
 #include "load.h"
 
-bool build_load(Build *build, const char *path) {
+static bool get_lute_build_flags(char **flags) {
+    const char *env = getenv("LUTE_BUILD_FLAGS");
+
+    if (env) {
+        *flags = strdup(env);
+        return true;
+    }
+
     Package lute_package;
     package_init(&lute_package, "lute");
 
+    size_t len = strlen(lute_package.cflags) + strlen(lute_package.libs) + 2;
+    *flags = malloc(len);
+
+    snprintf(*flags, len, "%s %s", lute_package.cflags, lute_package.libs);
+
+    free(lute_package.cflags);
+
+    return true;
+}
+
+bool build_load(Build *build, const char *path) {
     Args args;
     vec_init(&args);
+
+    char *flags;
+    if (!get_lute_build_flags(&flags))
+        return false;
 
     vec_push(&args, "clang");
     vec_push(&args, "-shared");
     vec_push(&args, path);
-    vec_push(&args, lute_package.cflags);
-    vec_push(&args, lute_package.libs);
+    vec_push(&args, flags);
     vec_push(&args, "-o");
     vec_push(&args, "out/build.so");
     vec_push(&args, "-I");
@@ -27,7 +48,7 @@ bool build_load(Build *build, const char *path) {
     bool success = execute(&args);
     vec_free(&args);
 
-    package_free(&lute_package);
+    free(flags);
 
     if (!success)
         return false;

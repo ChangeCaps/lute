@@ -52,6 +52,12 @@ pkgs.stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  postFixup = ''
+    wrapProgram $out/bin/lute \
+      --prefix PATH : "${pkgs.lib.makeBinPath [ pkgs.pkg-config ]}" \
+      --set LUTE_BUILD_FLAGS "-I$out/include -L$lib -llute" 
+  '';
+
   meta = {
     pkgConfigModules = [ "lute" ];
   };

@@ -1,5 +1,5 @@
 {
-  description = "A very basic flake";
+  description = "The Lute build system";
 
   inputs = {
     nixpkgs.url = "nixpkgs/nixos-unstable";
