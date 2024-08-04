@@ -48,9 +48,6 @@ bool build_load(Build *build, const char *path) {
     vec_push(&args, cflags);
     vec_push(&args, libs);
 
-    char *cmd = vec_join(&args, " ");
-    printf("%s\n", cmd);
-
     bool success = execute(&args);
     vec_free(&args);
 
