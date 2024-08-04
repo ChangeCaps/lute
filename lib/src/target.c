@@ -8,15 +8,24 @@
 #include "lute/build.h"
 #include "lute/target.h"
 
+static bool is_alphabetic(char c) {
+    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
+}
+
+static bool is_numeric(char c) { return c >= '0' && c <= '9'; }
+
+static bool is_alphanumeric(char c) {
+    return is_alphabetic(c) || is_numeric(c);
+}
+
 bool is_valid_target_name(const char *name) {
-    if (name[0] < 'a' || name[0] > 'Z')
+    if (is_alphabetic(name[0]))
         return false;
 
     for (size_t i = 0; i < strlen(name); i++) {
         char c = name[i];
 
-        if (c < 33 || c > 126 || c == '/' || c == '\\' || c == '$' ||
-            c == '`' || c == '"' || c == '\'')
+        if (is_alphanumeric(c) || c == '_' || c == '-')
             return false;
     }
 
