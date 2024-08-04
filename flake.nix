@@ -3,13 +3,16 @@
 
   inputs = {
     nixpkgs.url = "nixpkgs/nixos-unstable";
+    flake-utils.url = "github:numtide/flake-utils";
   };
 
-  outputs = { self, nixpkgs }: 
-  let 
-    system = "x86_64-linux";
-    pkgs = nixpkgs.legacyPackages.${system};
-  in {
-    packages.x86_64-linux.default = (import ./default.nix { inherit pkgs; });
-  };
+  outputs = { nixpkgs, flake-utils, ... }: 
+    flake-utils.lib.eachDefaultSystem (system:
+      let pkgs = nixpkgs.legacyPackages.${system}; in {
+        packages = rec {
+          lute = (import ./default.nix { inherit pkgs; });
+          default = lute;
+        };
+      }
+    );
 }
