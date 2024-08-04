@@ -21,7 +21,7 @@ int run_command(Build *build, int argc, char **argv) {
         return 1;
     }
 
-    if (build_binary(target)) {
+    if (!build_binary(target)) {
         return 1;
     }
 
