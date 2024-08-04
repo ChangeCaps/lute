@@ -6,6 +6,9 @@
 #include <stddef.h>
 #include <stdlib.h>
 
+#define __vec_concat(a, b) __CONCAT(a, b)
+#define __vec_i __vec_concat(__i, __LINE__)
+
 #define Vec(type)                                                              \
     struct {                                                                   \
         type *data;                                                            \
@@ -43,9 +46,9 @@
     } while (0)
 
 #define vec_foreach(vec, elem)                                                 \
-    typeof(*(vec)->data) elem;                                                 \
-    for (size_t __i = 0; __i < (vec)->len && ((elem) = (vec)->data[__i], 1);   \
-         __i++)
+    size_t __vec_i = 0;                                                        \
+    for (typeof(*(vec)->data) elem;                                            \
+         __vec_i < (vec)->len && ((elem) = (vec)->data[__vec_i], 1); __vec_i)
 
 #define vec_join(vec, sep) __vec_join((vec)->data, (vec)->len, sep)
 
