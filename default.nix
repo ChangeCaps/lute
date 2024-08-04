@@ -11,10 +11,7 @@ pkgs.stdenv.mkDerivation {
     pkgs.clang-tools
     pkgs.clang
     pkgs.gnumake
-  ];
-
-  buildInputs = [
-    pkgs.pkg-config
+    pkgs.makeWrapper
   ];
 
   buildPhase = ''
@@ -48,6 +45,11 @@ pkgs.stdenv.mkDerivation {
     EOF
 
     runHook postInstall
+  '';
+
+  postFixup = ''
+    wrapProgram $out/bin/lute \
+      --set PATH ${pkgs.lib.makeBinPath [ pkgs.pkg-config ]}
   '';
 
   meta = {
