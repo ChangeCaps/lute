@@ -80,11 +80,39 @@ BuildTarget *build_node_target(BuildNode *node, const char *name) {
     return NULL;
 }
 
+static bool is_url_shorthand(const char *url, const char *shorthand) {
+    return memcmp(url, shorthand, strlen(shorthand)) == 0;
+}
+
+static char *expand_url_shorthand(const char *url, const char *shorthand,
+                                  const char *expanded) {
+    char *out = malloc(strlen(url) + strlen(expanded) - strlen(shorthand) + 1);
+
+    strcpy(out, expanded);
+    strcat(out, url + strlen(shorthand));
+
+    return out;
+}
+
+static char *expand_dep_url(const char *url) {
+    char *github_short = "github:";
+    char *github_long = "git@github.com:";
+    char *gitlab_short = "gitlab:";
+    char *gitlab_long = "git@gitlab.com:";
+
+    if (is_url_shorthand(url, github_short))
+        return expand_url_shorthand(url, github_short, github_long);
+    if (is_url_shorthand(url, gitlab_short))
+        return expand_url_shorthand(url, gitlab_short, gitlab_long);
+
+    return strdup(url);
+}
+
 void build_dep_init(BuildDep *dep, const char *url, const char *name) {
-    dep->url = strdup(url);
+    dep->url = expand_dep_url(url);
     dep->name = strdup(name);
 
-    hash_string(dep->id, "dep", url);
+    hash_string(dep->id, "dep", dep->url);
     dep->node = NULL;
     dep->target = NULL;
 }
