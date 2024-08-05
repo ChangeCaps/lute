@@ -29,6 +29,11 @@ static char *pkg_config_flags(const char *flags, const char *name) {
 
     pclose(fp);
 
+    // remove trailing newline
+    if (buffer[strlen(buffer) - 1] == '\n') {
+        buffer[strlen(buffer) - 1] = '\0';
+    }
+
     return strdup(buffer);
 }
 
@@ -117,7 +122,7 @@ void build_graph_free(BuildGraph *graph) {
     vec_free(&graph->nodes);
 }
 
-char *build_add_path(BuildGraph *graph, const char *path) {
+static char *build_add_path(BuildGraph *graph, const char *path) {
     char *real = realpath(path, NULL);
 
     vec_foreach(&graph->paths, p) if (strcmp(p, real) == 0) return p;
@@ -126,7 +131,8 @@ char *build_add_path(BuildGraph *graph, const char *path) {
     return real;
 }
 
-bool build_add_source(BuildGraph *graph, const char *path, Paths *paths) {
+static bool build_add_source(BuildGraph *graph, const char *path,
+                             Paths *paths) {
     if (!is_dir(path)) {
         char *ext = strrchr(path, '.');
 
@@ -174,6 +180,25 @@ bool build_add_source(BuildGraph *graph, const char *path, Paths *paths) {
     return true;
 }
 
+static BuildPackage *build_add_package(BuildGraph *graph, const char *name) {
+    vec_foreach(&graph->packages, package) {
+        if (strcmp(package->name, name) == 0) {
+            return package;
+        }
+    }
+
+    BuildPackage *build_package = malloc(sizeof(BuildPackage));
+
+    if (!build_package_init(build_package, name)) {
+        free(build_package);
+        return NULL;
+    }
+
+    vec_push(&graph->packages, build_package);
+
+    return build_package;
+}
+
 static bool build_graph_load_target(BuildGraph *graph,
                                     BuildTarget *build_target,
                                     const Target *target) {
@@ -189,16 +214,16 @@ static bool build_graph_load_target(BuildGraph *graph,
 
     vec_init(&build_target->packages);
     vec_foreach(&target->packages, package) {
-        BuildPackage *build_package = malloc(sizeof(BuildPackage));
+        BuildPackage *build_package = build_add_package(graph, package);
 
-        if (!build_package_init(build_package, package)) {
+        if (!build_package) {
             vec_free(&build_target->sources);
             vec_free(&build_target->packages);
 
             return false;
         }
 
-        vec_push(&graph->packages, build_package);
+        vec_push(&build_target->packages, build_package);
     }
 
     vec_init(&build_target->includes);
