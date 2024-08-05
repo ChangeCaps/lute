@@ -3,13 +3,16 @@
 
 #pragma once
 
-#include <stdbool.h>
-
 #include <lute/vector.h>
 
-typedef Vec(const char *) Args;
+typedef Vec(char *) Args;
 
-bool execute(const Args *args);
+Args args_new();
+void args_free(Args *args);
+
+void args_push(Args *args, const char *arg);
+char *args_join(Args *args);
+int args_exec(Args *args);
 
 // This file is part of Lute.
 // Copyright (C) 2024  Hjalte C. Nannestad

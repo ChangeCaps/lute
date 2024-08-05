@@ -1,198 +1,271 @@
 // Copyright (C) 2024  Hjalte C. Nannestad
 // See end of file for license information.
 
+#include <lute/target.h>
 #include <stdio.h>
 
+#include "args.h"
 #include "build.h"
-#include "target.h"
 #include "util.h"
 
-int build_command(Build *build, int argc, char **argv) {
-    char *target_name = get_target_name(argc, argv);
-    Target *target = select_target(build, target_name);
+int build_command(int argc, char **argv) {
+    BuildGraph graph;
 
-    if (!target) {
-        printf("Error: Could not find target\n\n");
-        return build_help_command(build, argc, argv);
+    if (!build_graph_load(&graph)) {
+        return 1;
     }
 
-    return build_target(target);
+    BuildTarget *target = NULL;
+
+    if (argc > 2 && is_valid_target_name(argv[2])) {
+        vec_foreachat(&graph.root->targets, t) {
+            if (strcmp(t->name, argv[2]) == 0)
+                target = t;
+        }
+
+        if (!target) {
+            printf("Error: Target %s not found\n", argv[2]);
+            return 1;
+        }
+    }
+
+    if (!target && graph.root->targets.len != 1) {
+        printf("Error: No target specified and no default target found\n");
+        return 1;
+    } else {
+        target = graph.root->targets.data;
+    }
+
+    char outdir[256];
+    snprintf(outdir, sizeof(outdir), "out/%s", target->name);
+
+    if (!build_target(target, target->output, outdir)) {
+        printf("Build of target %s failed, exiting\n", target->name);
+        return 1;
+    }
+
+    return 0;
 }
 
-int build_help_command(Build *build, int argc, char **argv) {
+int build_help_command(BuildGraph *build, int argc, char **argv) {
     (void)build;
     (void)argc;
     (void)argv;
 
     printf("Usage: lute build [target]\n");
-    return 1;
+    return 0;
 }
 
-bool build_target(Target *target) {
-    if (!make_dir(target->outdir)) {
-        printf("Error: Could not create target directory\n");
-        return false;
-    }
+bool build_target(const BuildTarget *target, Output output,
+                  const char *outdir) {
 
-    if (target_is(target, BINARY))
-        if (build_binary(target))
+    vec_foreach(&target->deps, dep) {
+        char depoutdir[256];
+        snprintf(depoutdir, sizeof(depoutdir), "out/deps/%s", dep->id);
+
+        if (!build_target(dep->node->targets.data, STATIC | BINARY, depoutdir))
             return false;
-
-    if (target_is(target, STATIC))
-        if (build_static(target))
-            return false;
-
-    if (target_is(target, SHARED))
-        if (build_shared(target))
-            return false;
-
-    return true;
-}
-
-bool build_binary(Target *target) {
-    if (!target_is(target, BINARY)) {
-        printf("Error: Target '%s' is not a binary\n", target->name);
-
-        return 1;
     }
 
-    printf("Building target[binary]: %s\n", target->name);
-
-    char output[256];
-    target_binary(target, output, sizeof(output));
-
-    Args args;
-    vec_init(&args);
-    push_binary_args(&args, target, output);
-
-    if (!execute(&args)) {
-        vec_free(&args);
+    if (!build_objects(target, outdir))
         return false;
-    }
 
-    vec_free(&args);
+    Vec(const char *) objects;
+    vec_init(&objects);
 
-    return true;
-}
-
-bool build_static(Target *target) {
-    printf("Building target[static]: %s\n", target->name);
-
-    char output[256];
-    target_static(target, output, sizeof(output));
-
-    Args args;
-    vec_init(&args);
-    push_static_args(&args, target, output);
-
-    if (!execute(&args)) {
-        vec_free(&args);
-        return false;
-    }
-
-    vec_free(&args);
-
-    return true;
-}
-
-bool build_shared(Target *target) {
-    printf("Building target[shared]: %s\n", target->name);
-
-    char output[256];
-    target_shared(target, output, sizeof(output));
-
-    Args args;
-    vec_init(&args);
-    push_shared_args(&args, target, output);
-
-    if (!execute(&args)) {
-        vec_free(&args);
-        return false;
-    }
-
-    vec_free(&args);
-
-    return true;
-}
-
-void push_binary_args(Args *args, Target *target, const char *path) {
-    vec_push(args, target_compiler(target));
-
-    push_source_args(args, target);
-    push_include_args(args, target);
-
-    vec_foreach(&target->packages, package) {
-        vec_push(args, package->cflags);
-        vec_push(args, package->libs);
-    }
-
-    vec_push(args, "-o");
-    vec_push(args, path);
-    push_warning_args(args, target);
-}
-
-void push_static_args(Args *args, Target *target, const char *path) {
-    vec_push(args, target_compiler(target));
-
-    push_source_args(args, target);
-    push_include_args(args, target);
-
-    vec_foreach(&target->packages, package) {
-        vec_push(args, package->cflags);
-        vec_push(args, package->libs);
-    }
-
-    vec_push(args, "-c");
-    vec_push(args, "-o");
-    vec_push(args, path);
-    push_warning_args(args, target);
-}
-
-void push_shared_args(Args *args, Target *target, const char *path) {
-    vec_push(args, target_compiler(target));
-
-    push_source_args(args, target);
-    push_include_args(args, target);
-
-    vec_foreach(&target->packages, package) {
-        vec_push(args, package->cflags);
-        vec_push(args, package->libs);
-    }
-
-    vec_push(args, "-shared");
-    vec_push(args, "-o");
-    vec_push(args, path);
-    push_warning_args(args, target);
-}
-
-void push_source_args(Args *args, Target *target) {
     vec_foreach(&target->sources, source) {
-        if (source->kind != SOURCE)
-            continue;
+        HashId id;
+        hash_string(id, "obj", source);
 
-        vec_push(args, source->path);
+        char *object = malloc(256);
+        snprintf(object, 256, "%s/%s.o", outdir, id);
+
+        vec_push(&objects, object);
     }
+
+    char *objs = vec_join(&objects, " ");
+    vec_free(&objects);
+
+    if (target->output & output & BINARY) {
+        printf("Building binary %s\n", target->name);
+
+        char binpath[256];
+        snprintf(binpath, sizeof(binpath), "%s/%s", outdir, target->name);
+
+        Args args = args_new();
+        args_push(&args, "clang");
+        args_push(&args, objs);
+        args_push(&args, "-o");
+        args_push(&args, binpath);
+
+        vec_foreach(&target->packages, package) {
+            args_push(&args, package->libs);
+        }
+
+        vec_foreach(&target->deps, dep) {
+            if (!(dep->target->output & LIBRARY))
+                continue;
+
+            char depoutdir[256];
+            snprintf(depoutdir, sizeof(depoutdir), "out/deps/%s", dep->id);
+
+            args_push(&args, "-L");
+            args_push(&args, depoutdir);
+            args_push(&args, "-l");
+            args_push(&args, dep->name);
+        }
+
+        bool success = args_exec(&args) == 0;
+        args_free(&args);
+
+        if (!success) {
+            printf("Error: Could not build binary %s\n", target->name);
+            return false;
+        }
+
+        printf("Built binary %s\n", target->name);
+    }
+
+    if (target->output & output & STATIC) {
+        printf("Building static library %s\n", target->name);
+
+        char libpath[256];
+        snprintf(libpath, sizeof(libpath), "%s/lib%s.a", outdir, target->name);
+
+        Args args = args_new();
+
+        args_push(&args, "ar");
+        args_push(&args, "rcs");
+        args_push(&args, libpath);
+        args_push(&args, objs);
+
+        vec_foreach(&target->packages, package) {
+            args_push(&args, package->libs);
+        }
+
+        vec_foreach(&target->deps, dep) {
+            if (!(dep->target->output & STATIC))
+                continue;
+
+            char deplib[256];
+            snprintf(deplib, sizeof(deplib), "out/deps/%s/lib%s.a", dep->id,
+                     dep->name);
+
+            args_push(&args, deplib);
+        }
+
+        bool success = args_exec(&args) == 0;
+        args_free(&args);
+
+        if (!success) {
+            printf("Error: Could not build static library %s\n", target->name);
+            return false;
+        }
+    }
+
+    if (target->output & output & SHARED) {
+        printf("Building shared library %s\n", target->name);
+
+        char libpath[256];
+        snprintf(libpath, sizeof(libpath), "%s/lib%s.so", outdir, target->name);
+
+        Args args = args_new();
+
+        args_push(&args, "clang");
+        args_push(&args, "-shared");
+        args_push(&args, objs);
+        args_push(&args, "-o");
+        args_push(&args, libpath);
+
+        vec_foreach(&target->packages, package) {
+            args_push(&args, package->libs);
+        }
+
+        vec_foreach(&target->deps, dep) {
+            if (!(dep->target->output & SHARED))
+                continue;
+
+            char depoutdir[256];
+            snprintf(depoutdir, sizeof(depoutdir), "out/deps/%s", dep->id);
+
+            args_push(&args, "-L");
+            args_push(&args, depoutdir);
+            args_push(&args, "-l");
+            args_push(&args, dep->name);
+        }
+
+        bool success = args_exec(&args) == 0;
+        args_free(&args);
+
+        if (!success) {
+            printf("Error: Could not build shared library %s\n", target->name);
+            return false;
+        }
+    }
+
+    return true;
 }
 
-void push_include_args(Args *args, Target *target) {
-    vec_foreach(&target->includes, include) {
-        vec_push(args, "-I");
-        vec_push(args, include->path);
-    }
-}
+bool build_objects(const BuildTarget *target, const char *outdir) {
+    if (!make_dirs(outdir)) {
+        printf("Error: Could not create output directory\n");
 
-void push_warning_args(Args *args, Target *target) {
-    if (target->warn & Wall) {
-        vec_push(args, "-Wall");
+        return false;
     }
 
-    if (target->warn & Wextra) {
-        vec_push(args, "-Wextra");
+    vec_foreach(&target->sources, source) {
+        printf("Compiling %s\n", source);
+
+        HashId id;
+        hash_string(id, "obj", source);
+
+        char object[256];
+        snprintf(object, sizeof(object), "%s/%s.o", outdir, id);
+
+        Args args = args_new();
+        args_push(&args, "clang");
+        args_push(&args, "-c");
+        args_push(&args, source);
+        args_push(&args, "-o");
+        args_push(&args, object);
+
+        vec_foreach(&target->includes, include) {
+            args_push(&args, "-I");
+            args_push(&args, include);
+        }
+
+        vec_foreach(&target->packages, package) {
+            args_push(&args, package->cflags);
+        }
+
+        vec_foreach(&target->deps, dep) {
+            vec_foreach(&dep->target->includes, include) {
+                args_push(&args, "-I");
+                args_push(&args, include);
+            }
+        }
+
+        if (target->warn & Wall)
+            args_push(&args, "-Wall");
+        if (target->warn & Wextra)
+            args_push(&args, "-Wextra");
+        if (target->warn & Werror)
+            args_push(&args, "-Werror");
+
+        bool success = args_exec(&args) == 0;
+        args_free(&args);
+
+        if (!success) {
+            printf("Error: Could not compile %s\n", source);
+            return false;
+        }
+
+        printf("Compiled %s\n", source);
+
+        return true;
     }
 
-    if (target->warn & Werror) {
-        vec_push(args, "-Werror");
-    }
+    return 0;
 }
 
 // This file is part of Lute.

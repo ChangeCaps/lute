@@ -1,11 +1,9 @@
 // Copyright (C) 2024  Hjalte C. Nannestad
 // See end of file for license information.
 
-#include <stdlib.h>
+#pragma once
 
-#include "lute/path.h"
-
-void path_free(Path *source) { free(source->path); }
+int clean_command(int argc, char **argv);
 
 // This file is part of Lute.
 // Copyright (C) 2024  Hjalte C. Nannestad

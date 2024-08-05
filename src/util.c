@@ -1,6 +1,7 @@
 // Copyright (C) 2024  Hjalte C. Nannestad
 // See end of file for license information.
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -49,6 +50,35 @@ bool make_dirs(const char *path) {
     free(copy);
 
     return make_dir(path);
+}
+
+bool read_file(const char *path, char **data) {
+    FILE *file = fopen(path, "r");
+    if (!file) {
+        return false;
+    }
+
+    fseek(file, 0, SEEK_END);
+    size_t size = ftell(file);
+    fseek(file, 0, SEEK_SET);
+
+    *data = malloc(size + 1);
+    if (!*data) {
+        fclose(file);
+        return false;
+    }
+
+    if (fread(*data, sizeof(char), size, file) != size) {
+        fclose(file);
+        free(*data);
+        return false;
+    }
+
+    (*data)[size] = '\0';
+
+    fclose(file);
+
+    return true;
 }
 
 // This file is part of Lute.

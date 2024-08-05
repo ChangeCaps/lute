@@ -1,9 +1,49 @@
 // Copyright (C) 2024  Hjalte C. Nannestad
 // See end of file for license information.
 
-#pragma once
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 
-int run_command(int argc, char **argv);
+#include <lute/serialize.h>
+
+void serialize_str(const char *string, FILE *file) {
+    if (!string) {
+        int32_t null = -1;
+        serialize_data(&null, file);
+        return;
+    }
+
+    int32_t len = strlen(string);
+    serialize_data(&len, file);
+    fwrite(string, sizeof(char), len, file);
+}
+
+bool deserialize_str(char **string, FILE *file) {
+    int32_t len;
+    if (!deserialize_data(&len, file)) {
+        return false;
+    }
+
+    if (len == -1) {
+        *string = NULL;
+        return true;
+    }
+
+    *string = malloc(len + 1);
+    if (!*string) {
+        return false;
+    }
+
+    if (fread(*string, sizeof(char), len, file) != (size_t)len) {
+        free(*string);
+        return false;
+    }
+
+    (*string)[len] = '\0';
+
+    return true;
+}
 
 // This file is part of Lute.
 // Copyright (C) 2024  Hjalte C. Nannestad

@@ -5,8 +5,63 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "lute/build.h"
+#include "lute/serialize.h"
 #include "lute/target.h"
+
+void dep_init(Dep *dep, const char *name, const char *target) {
+    dep->url = strdup(name);
+    dep->target = strdup(target);
+}
+
+void dep_free(Dep *dep) {
+    free(dep->url);
+    free(dep->target);
+}
+
+void serialize_dep(const Dep *dep, FILE *file) {
+    serialize_str(dep->url, file);
+    serialize_str(dep->target, file);
+}
+
+bool deserialize_dep(Dep *dep, FILE *file) {
+    *dep = (Dep){0};
+
+    bool success =
+        deserialize_str(&dep->url, file) && deserialize_str(&dep->target, file);
+
+    if (!success) {
+        dep_free(dep);
+    }
+
+    return success;
+}
+
+void deps_free(Deps *deps) {
+    vec_foreachat(deps, dep) dep_free(dep);
+    vec_free(deps);
+}
+
+bool deserialize_deps(Deps *deps, FILE *file) {
+    *deps = (Deps){0};
+
+    size_t len;
+    if (!deserialize_data(&len, file)) {
+        return false;
+    }
+
+    for (size_t i = 0; i < len; i++) {
+        Dep dep;
+
+        if (!deserialize_dep(&dep, file)) {
+            deps_free(deps);
+            return false;
+        }
+
+        vec_push(deps, dep);
+    }
+
+    return true;
+}
 
 static bool is_alphabetic(char c) {
     return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
@@ -32,10 +87,10 @@ bool is_valid_target_name(const char *name) {
     return true;
 }
 
-void target_init(Target *target, const char *name, Output kind, void *build) {
+bool target_init(Target *target, const char *name, Output kind) {
     if (!is_valid_target_name(name)) {
         printf("Error: Invalid target name: %s\n", name);
-        exit(1);
+        return false;
     }
 
     target->name = strdup(name);
@@ -43,61 +98,108 @@ void target_init(Target *target, const char *name, Output kind, void *build) {
     target->warn = 0;
     target->lang = C;
 
-    target->outdir = malloc(strlen("out/") + strlen(name) + 1);
-    sprintf(target->outdir, "out/%s", name);
-
-    target->build = build;
     vec_init(&target->sources);
     vec_init(&target->includes);
     vec_init(&target->packages);
+    vec_init(&target->deps);
+
+    return true;
 }
 
 void target_free(Target *target) {
     free(target->name);
 
+    vec_foreach(&target->sources, source) free(source);
+    vec_foreach(&target->includes, include) free(include);
+    vec_foreach(&target->packages, package) free(package);
+    vec_foreachat(&target->deps, dep) dep_free(dep);
+
     vec_free(&target->sources);
     vec_free(&target->includes);
     vec_free(&target->packages);
+    vec_free(&target->deps);
 }
 
-bool target_is(const Target *target, Output kind) {
-    return (target->output & kind) > 0;
+void serialize_target(const Target *target, FILE *file) {
+    serialize_str(target->name, file);
+    serialize_data(&target->output, file);
+    serialize_data(&target->warn, file);
+    serialize_data(&target->lang, file);
+
+    serialize_data(&target->sources.len, file);
+    vec_foreach(&target->sources, source) serialize_str(source, file);
+
+    serialize_data(&target->includes.len, file);
+    vec_foreach(&target->includes, include) serialize_str(include, file);
+
+    serialize_data(&target->packages.len, file);
+    vec_foreach(&target->packages, package) serialize_str(package, file);
+
+    serialize_data(&target->deps.len, file);
+    vec_foreachat(&target->deps, dep) serialize_dep(dep, file);
 }
 
-void target_infer_lang(Target *target) {
-    for (size_t i = 0; i < target->sources.len; i++) {
-        Path *source = target->sources.data[i];
+static bool deserialize_strings(Strings *strings, FILE *file) {
+    size_t len;
+    if (!deserialize_data(&len, file)) {
+        return false;
+    }
 
-        const char *ext = strrchr(source->path, '.');
-
-        if (strcmp(ext, ".cpp") == 0) {
-            target->lang = CXX;
-            return;
+    for (size_t i = 0; i < len; i++) {
+        char *string;
+        if (!deserialize_str(&string, file)) {
+            return false;
         }
+
+        vec_push(strings, string);
     }
+
+    return true;
 }
 
-char *target_compiler(const Target *target) {
-    switch (target->lang) {
-    case C:
-        return target->build->cc;
-    case CXX:
-        return target->build->cxx;
-    default:
-        return NULL;
+bool deserialize_target(Target *target, FILE *file) {
+    *target = (Target){0};
+
+    bool success = deserialize_str(&target->name, file) &&
+                   deserialize_data(&target->output, file) &&
+                   deserialize_data(&target->warn, file) &&
+                   deserialize_data(&target->lang, file) &&
+                   deserialize_strings(&target->sources, file) &&
+                   deserialize_strings(&target->includes, file) &&
+                   deserialize_strings(&target->packages, file) &&
+                   deserialize_deps(&target->deps, file);
+
+    if (!success) {
+        target_free(target);
     }
+
+    return success;
 }
 
-void target_binary(Target *target, char *path, size_t size) {
-    snprintf(path, size, "%s/%s", target->outdir, target->name);
+void serialize_targets(const Targets *targets, FILE *file) {
+    serialize_data(&targets->len, file);
+    vec_foreach(targets, target) serialize_target(target, file);
 }
 
-void target_static(Target *target, char *path, size_t size) {
-    snprintf(path, size, "%s/%s.o", target->outdir, target->name);
-}
+bool deserialize_targets(Targets *targets, FILE *file) {
+    *targets = (Targets){0};
 
-void target_shared(Target *target, char *path, size_t size) {
-    snprintf(path, size, "%s/lib%s.so", target->outdir, target->name);
+    size_t len;
+    if (!deserialize_data(&len, file)) {
+        return false;
+    }
+
+    for (size_t i = 0; i < len; i++) {
+        Target *target = malloc(sizeof(Target));
+        if (!deserialize_target(target, file)) {
+            free(target);
+            return false;
+        }
+
+        vec_push(targets, target);
+    }
+
+    return true;
 }
 
 // This file is part of Lute.

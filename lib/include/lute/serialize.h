@@ -3,7 +3,14 @@
 
 #pragma once
 
-int run_command(int argc, char **argv);
+#include <stdbool.h>
+#include <stdio.h>
+
+#define serialize_data(data, file) fwrite(data, sizeof(*(data)), 1, file)
+#define deserialize_data(data, file) fread(data, sizeof(*(data)), 1, file)
+
+void serialize_str(const char *string, FILE *file);
+bool deserialize_str(char **string, FILE *file);
 
 // This file is part of Lute.
 // Copyright (C) 2024  Hjalte C. Nannestad

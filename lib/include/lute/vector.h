@@ -32,10 +32,11 @@
         (vec)->cap = 0;                                                        \
     } while (0)
 
+#define __vec_elem_size(vec) sizeof(struct { typeof(*(vec)->data) data; })
 #define vec_grow(vec)                                                          \
     do {                                                                       \
         (vec)->cap = (vec)->cap * 2 + 1;                                       \
-        (vec)->data = realloc((vec)->data, sizeof(*(vec)->data) * (vec)->cap); \
+        (vec)->data = realloc((vec)->data, __vec_elem_size(vec) * (vec)->cap); \
     } while (0)
 
 #define vec_push(vec, elem)                                                    \
@@ -50,6 +51,12 @@
     size_t __vec_i = 0;                                                        \
     for (typeof(*(vec)->data) elem;                                            \
          __vec_i < (vec)->len && ((elem) = (vec)->data[__vec_i], 1);           \
+         __vec_i++)
+
+#define vec_foreachat(vec, elem)                                               \
+    size_t __vec_i = 0;                                                        \
+    for (typeof(*(vec)->data) *elem;                                           \
+         __vec_i < (vec)->len && ((elem) = &(vec)->data[__vec_i], 1);          \
          __vec_i++)
 
 #define vec_join(vec, sep) __vec_join((vec)->data, (vec)->len, sep)

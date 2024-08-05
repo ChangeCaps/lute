@@ -1,5 +1,5 @@
-CXX = clang
-CXXFLAGS = -Ilib/include -Wall -Wextra -g
+CC = clang
+CCFLAGS = -Ilib/include -Wall -Wextra -g
 
 LIB_SOURCES = $(wildcard lib/src/*.c)
 LIB_OBJECTS = $(LIB_SOURCES:lib/src/%.c=out/lib/%.o)
@@ -9,7 +9,7 @@ SOURCES = $(wildcard src/*.c)
 OBJECTS = $(SOURCES:src/%.c=out/%.o)
 DEPENDS = $(OBJECTS:.o=.d)
 
-all: out/lute out/lib/liblute.so
+all: out/lute out/lib/lutebuild.o
 
 clean:
 	rm -rf out
@@ -21,16 +21,18 @@ out/lib/: out/
 	mkdir -p out/lib
 
 out/lib/%.o: lib/src/%.c out/lib/
-	$(CXX) $(CXXFLAGS) -MMD -MP -c $< -o $@
+	$(CC) $(CCFLAGS) -MMD -MP -c $< -o $@
 
-out/lib/liblute.so: $(LIB_OBJECTS)
-	$(CXX) $(CXXFLAGS) -shared $(LIB_OBJECTS) -o out/lib/liblute.so
+out/lib/lutebuild.o: $(LIB_OBJECTS)
+	$(CC) $(CCFLAGS) -c lib/main.c -o out/lib/main.o
+	ld -r $(LIB_OBJECTS) out/lib/main.o -o out/lib/lutebuild.o
+	
 
 out/%.o: src/%.c out/
-	$(CXX) $(CXXFLAGS) -MMD -MP -c $< -o $@
+	$(CC) $(CCFLAGS) -MMD -MP -c $< -o $@
 
 -include $(LIB_DEPENDS)
 -include $(DEPENDS)
 
 out/lute: $(LIB_OBJECTS) $(OBJECTS)
-	$(CXX) $(CXXFLAGS) $(LIB_OBJECTS) $(OBJECTS) -o out/lute
+	$(CC) $(CCFLAGS) $(LIB_OBJECTS) $(OBJECTS) -o out/lute

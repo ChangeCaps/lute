@@ -4,54 +4,73 @@
 #pragma once
 
 #include <stdbool.h>
+#include <stdio.h>
 
-#include "package.h"
-#include "path.h"
+#include "vector.h"
 
-typedef enum {
+typedef enum Output {
     BINARY = 1 << 0,
     STATIC = 1 << 1,
     SHARED = 1 << 2,
+    HEADER = 1 << 3,
+
+    LIBRARY = STATIC | SHARED,
 } Output;
 
-typedef enum {
+typedef enum WarnFlag {
     Wall = 1 << 0,
     Wextra = 1 << 1,
     Werror = 1 << 2,
 } WarnFlag;
 
-typedef enum {
-    C,
-    CXX,
+typedef enum Language {
+    C = 0,
+    CPP = 1,
 } Language;
 
-typedef struct {
+typedef struct Dep {
+    char *url;
+    char *target;
+} Dep;
+
+typedef Vec(Dep) Deps;
+
+void dep_init(Dep *dep, const char *name, const char *target);
+void dep_free(Dep *dep);
+
+void serialize_dep(const Dep *dep, FILE *file);
+bool deserialize_dep(Dep *dep, FILE *file);
+
+void deps_free(Deps *deps);
+
+bool deserialize_deps(Deps *deps, FILE *file);
+
+typedef Vec(char *) Strings;
+
+typedef struct Target {
     char *name;
     Output output;
     WarnFlag warn;
     Language lang;
 
-    char *outdir;
-
-    struct Build *build;
-    Paths sources;
-    Paths includes;
-    Packages packages;
+    Strings sources;
+    Strings includes;
+    Strings packages;
+    Deps deps;
 } Target;
 
 typedef Vec(Target *) Targets;
 
 bool is_valid_target_name(const char *name);
 
-void target_init(Target *target, const char *name, Output kind, void *build);
+bool target_init(Target *target, const char *name, Output kind);
 void target_free(Target *target);
 
-bool target_is(const Target *target, Output kind);
-void target_infer_lang(Target *target);
-char *target_compiler(const Target *target);
-void target_binary(Target *target, char *path, size_t maxlen);
-void target_static(Target *target, char *path, size_t maxlen);
-void target_shared(Target *target, char *path, size_t maxlen);
+void serialize_target(const Target *target, FILE *file);
+bool deserialize_target(Target *target, FILE *file);
+
+void serialize_targets(const Targets *targets, FILE *file);
+bool deserialize_targets(Targets *targets, FILE *file);
 
 // This file is part of Lute.
 // Copyright (C) 2024  Hjalte C. Nannestad

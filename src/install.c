@@ -1,28 +1,18 @@
 // Copyright (C) 2024  Hjalte C. Nannestad
 // See end of file for license information.
 
-#pragma once
+#include <stdio.h>
 
-#include "vector.h"
+#include "install.h"
 
-typedef enum {
-    SOURCE,
-    HEADER,
-    DIRECTORY,
-} FileKind;
+int install_command(int argc, char **argv) {
+    (void)argc;
+    (void)argv;
 
-/// Represents a path to a source file.
-typedef struct {
-    /// The path to the source file.
-    char *path;
+    printf("Installing...\n");
 
-    /// The kind of the source file.
-    FileKind kind;
-} Path;
-
-void path_free(Path *source);
-
-typedef Vec(Path *) Paths;
+    return 0;
+}
 
 // This file is part of Lute.
 // Copyright (C) 2024  Hjalte C. Nannestad

@@ -1,32 +1,31 @@
 // Copyright (C) 2024  Hjalte C. Nannestad
 // See end of file for license information.
 
-#include <string.h>
+#include "args.h"
 
-#include "target.h"
-
-char *get_target_name(int argc, char **argv) {
-    if (argc >= 3 && is_valid_target_name(argv[2])) {
-        return argv[2];
-    }
-
-    return NULL;
+Args args_new() {
+    Args args;
+    vec_init(&args);
+    return args;
 }
 
-Target *select_target(Build *build, const char *name) {
-    if (!name && build->targets.len > 0) {
-        return build->targets.data[0];
-    }
+void args_free(Args *args) {
+    vec_foreach(args, arg) free(arg);
+    vec_free(args);
+}
 
-    for (size_t i = 0; i < build->targets.len; i++) {
-        Target *target = build->targets.data[i];
+void args_push(Args *args, const char *arg) {
+    char *copy = strdup(arg);
+    vec_push(args, copy);
+}
 
-        if (strcmp(target->name, name) == 0) {
-            return target;
-        }
-    }
+char *args_join(Args *args) { return vec_join((Vec(const char *) *)args, " "); }
 
-    return NULL;
+int args_exec(Args *args) {
+    char *cmd = args_join(args);
+    int ret = system(cmd);
+    free(cmd);
+    return ret;
 }
 
 // This file is part of Lute.

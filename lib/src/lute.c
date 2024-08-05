@@ -1,27 +1,33 @@
 // Copyright (C) 2024  Hjalte C. Nannestad
 // See end of file for license information.
 
-#include "lute/lute.h"
+#include <lute/lute.h>
 
-Target *target(Build *build, const char *name, Output kind) {
+Target *target(Build *b, const char *name, Output kind) {
     Target target;
-    target_init(&target, name, kind, build);
-    return build_push_target(build, target);
+    target_init(&target, name, kind);
+    return build_push_target(b, target);
 }
 
-void source(Target *target, const char *path) {
-    build_add_paths(target->build, path, &target->sources);
-    target_infer_lang(target);
+void source(Target *t, const char *path) {
+    char *source = strdup(path);
+    vec_push(&t->sources, source);
 }
 
-void include(Target *target, const char *path) {
-    Path *include_path = build_add_path(target->build, path);
-    vec_push(&target->includes, include_path);
+void include(Target *t, const char *path) {
+    char *include = strdup(path);
+    vec_push(&t->includes, include);
 }
 
-void package(Target *target, const char *name) {
-    Package *package = build_add_package(target->build, name);
-    vec_push(&target->packages, package);
+void package(Target *t, const char *name) {
+    char *package = strdup(name);
+    vec_push(&t->packages, package);
+}
+
+void depend(Target *t, const char *uri, const char *target) {
+    Dep dep;
+    dep_init(&dep, uri, target);
+    vec_push(&t->deps, dep);
 }
 
 // This file is part of Lute.

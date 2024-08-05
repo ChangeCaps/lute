@@ -3,32 +3,28 @@
 
 #pragma once
 
-#include "package.h"
-#include "path.h"
 #include "target.h"
 
+// The primary data structure of Lute.
 typedef struct Build {
-    char *cc;
-    char *cxx;
-
+    // The targets of the build.
     Targets targets;
-    Paths paths;
-    Packages packages;
 } Build;
 
+// Initialize a build.
 void build_init(Build *build);
+
+// Free a build.
 void build_free(Build *build);
 
+// Add a target to a build.
 Target *build_push_target(Build *build, Target target);
-Path *build_push_path(Build *build, Path source);
-Package *build_push_package(Build *build, Package package);
-Package *build_add_package(Build *build, const char *name);
 
-/// Load a source file into the build.
-Path *build_add_path(Build *build, const char *path);
+// Serialize a build to a file.
+void serialize_build(const Build *build, FILE *file);
 
-/// Load source files into the build.
-void build_add_paths(Build *build, const char *path, Paths *paths);
+// Deserialize a build from a file.
+bool deserialize_build(Build *build, FILE *file);
 
 // This file is part of Lute.
 // Copyright (C) 2024  Hjalte C. Nannestad

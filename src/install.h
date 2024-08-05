@@ -1,18 +1,9 @@
 // Copyright (C) 2024  Hjalte C. Nannestad
 // See end of file for license information.
 
-#include <errno.h>
-#include <stdlib.h>
+#pragma once
 
-#include "command.h"
-
-bool execute(const Args *args) {
-    char *cmd = vec_join(args, " ");
-    errno = system(cmd);
-    free(cmd);
-
-    return errno == 0;
-}
+int install_command(int argc, char **argv);
 
 // This file is part of Lute.
 // Copyright (C) 2024  Hjalte C. Nannestad

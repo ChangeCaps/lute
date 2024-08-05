@@ -1,53 +1,60 @@
 // Copyright (C) 2024  Hjalte C. Nannestad
 // See end of file for license information.
 
-#include <stdio.h>
-#include <string.h>
-
-#include "build.h"
 #include "run.h"
-#include "target.h"
+#include "build.h"
+#include "graph.h"
 
-int run_command(Build *build, int argc, char **argv) {
-    char *target_name = get_target_name(argc, argv);
-    Target *target = select_target(build, target_name);
+int run_command(int argc, char **argv) {
+    BuildGraph graph;
 
-    if (!target) {
-        printf("Error: Could not find target\n\n");
+    if (!build_graph_load(&graph)) {
         return 1;
     }
 
-    if (!build_binary(target)) {
-        return 1;
-    }
+    BuildTarget *target = NULL;
 
-    char output[256];
-    target_binary(target, output, sizeof(output));
+    if (argc > 2 && is_valid_target_name(argv[2])) {
+        vec_foreachat(&graph.root->targets, t) {
+            if (strcmp(t->name, argv[2]) == 0)
+                target = t;
+        }
 
-    printf("Running target: %s\n", output);
-
-    Args args;
-    vec_init(&args);
-    vec_push(&args, output);
-
-    // loop through the arguments, all arguments after the first instance of
-    // "--" are passed to the target
-    bool is_args = false;
-    for (int i = 2; i < argc; i++) {
-        // if we haven't seen "--" yet, and the current argument is "--", we
-        // set `is_args` and continue
-        if (!is_args && strcmp(argv[i], "--") == 0) {
-            is_args = true;
-            continue;
-        } else if (is_args) {
-            vec_push(&args, argv[i]);
+        if (!target) {
+            printf("Error: Target %s not found\n", argv[2]);
+            return 1;
         }
     }
 
-    bool success = execute(&args);
-    vec_free(&args);
+    if (!target && graph.root->targets.len != 1) {
+        printf("Error: No target specified and no default target found\n");
+        return 1;
+    } else {
+        target = graph.root->targets.data;
+    }
 
-    return success ? 0 : 1;
+    if (!(target->output & BINARY)) {
+        printf("Error: Target %s is not a binary target\n", target->name);
+        return 1;
+    }
+
+    char outdir[256];
+    snprintf(outdir, sizeof(outdir), "out/%s", target->name);
+
+    if (!build_target(target, BINARY, outdir)) {
+        printf("Build of target %s failed, exiting\n", target->name);
+        return 1;
+    }
+
+    char cmd[256];
+    snprintf(cmd, sizeof(cmd), "./%s/%s", outdir, target->name);
+
+    if (system(cmd) != 0) {
+        printf("Error: Could not run target %s\n", target->name);
+        return 1;
+    }
+
+    return 0;
 }
 
 // This file is part of Lute.

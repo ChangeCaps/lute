@@ -1,9 +1,18 @@
 // Copyright (C) 2024  Hjalte C. Nannestad
 // See end of file for license information.
 
-#pragma once
+#include <stdio.h>
 
-int run_command(int argc, char **argv);
+#include "clean.h"
+
+int clean_command(int argc, char **argv) {
+    (void)argc;
+    (void)argv;
+
+    printf("Cleaning targets\n");
+
+    return 0;
+}
 
 // This file is part of Lute.
 // Copyright (C) 2024  Hjalte C. Nannestad

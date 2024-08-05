@@ -3,7 +3,9 @@
 
 #pragma once
 
-int run_command(int argc, char **argv);
+typedef char HashId[24];
+
+void hash_string(HashId id, const char *prefix, const char *str);
 
 // This file is part of Lute.
 // Copyright (C) 2024  Hjalte C. Nannestad

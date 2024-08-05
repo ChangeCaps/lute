@@ -5,7 +5,7 @@
 
 #include <lute/build.h>
 
-bool build_load(Build *build, const char *path);
+bool load_build(Build *build, const char *build_path, const char *out_path);
 
 // This file is part of Lute.
 // Copyright (C) 2024  Hjalte C. Nannestad
