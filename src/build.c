@@ -206,6 +206,15 @@ bool build_target(const BuildTarget *target, Output output,
     return true;
 }
 
+static void push_includes(Args *args, const BuildTarget *target) {
+    vec_foreach(&target->includes, include) {
+        args_push(args, "-I");
+        args_push(args, include);
+    }
+
+    vec_foreach(&target->deps, dep) push_includes(args, dep->target);
+}
+
 bool build_objects(const BuildTarget *target, const char *outdir) {
     if (!make_dirs(outdir)) {
         printf("Error: Could not create output directory\n");
@@ -229,20 +238,10 @@ bool build_objects(const BuildTarget *target, const char *outdir) {
         args_push(&args, "-o");
         args_push(&args, object);
 
-        vec_foreach(&target->includes, include) {
-            args_push(&args, "-I");
-            args_push(&args, include);
-        }
+        push_includes(&args, target);
 
         vec_foreach(&target->packages, package) {
             args_push(&args, package->cflags);
-        }
-
-        vec_foreach(&target->deps, dep) {
-            vec_foreach(&dep->target->includes, include) {
-                args_push(&args, "-I");
-                args_push(&args, include);
-            }
         }
 
         if (target->warn & Wall)

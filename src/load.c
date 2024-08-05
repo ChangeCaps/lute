@@ -16,10 +16,6 @@ static bool get_lute_build_flags(char **cflags, char **libs) {
         *cflags = strdup(env_cflags);
         *libs = strdup(env_libs);
         return true;
-    } else {
-        *cflags = strdup("-Ilib/include");
-        *libs = strdup("out/lib/lutebuild.o");
-        return true;
     }
 
     return false;
