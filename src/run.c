@@ -63,15 +63,10 @@ int run_command(int argc, char **argv) {
         }
     }
 
-    bool success = args_exec(&args) == 0;
+    int status = args_exec(&args) == 0;
     args_free(&args);
 
-    if (!success) {
-        printf("Error: Could not run target %s\n", target->name);
-        return 1;
-    }
-
-    return 0;
+    return status;
 }
 
 // This file is part of Lute.
