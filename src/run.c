@@ -30,7 +30,7 @@ int run_command(int argc, char **argv) {
     if (!target && graph.root->targets.len != 1) {
         printf("Error: No target specified and no default target found\n");
         return 1;
-    } else {
+    } else if (!target) {
         target = graph.root->targets.data;
     }
 
