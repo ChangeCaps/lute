@@ -270,6 +270,7 @@ static bool build_graph_load_target(BuildGraph *graph,
     build_target->output = target->output;
     build_target->warn = target->warn;
     build_target->lang = target->lang;
+    build_target->std = target->std ? strdup(target->std) : NULL;
 
     return true;
 }

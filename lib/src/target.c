@@ -97,6 +97,7 @@ bool target_init(Target *target, const char *name, Output kind) {
     target->output = kind;
     target->warn = 0;
     target->lang = C;
+    target->std = NULL;
 
     vec_init(&target->sources);
     vec_init(&target->includes);
@@ -125,6 +126,7 @@ void serialize_target(const Target *target, FILE *file) {
     serialize_data(&target->output, file);
     serialize_data(&target->warn, file);
     serialize_data(&target->lang, file);
+    serialize_str(target->std, file);
 
     serialize_data(&target->sources.len, file);
     vec_foreach(&target->sources, source) serialize_str(source, file);
@@ -164,6 +166,7 @@ bool deserialize_target(Target *target, FILE *file) {
                    deserialize_data(&target->output, file) &&
                    deserialize_data(&target->warn, file) &&
                    deserialize_data(&target->lang, file) &&
+                   deserialize_str(&target->std, file) &&
                    deserialize_strings(&target->sources, file) &&
                    deserialize_strings(&target->includes, file) &&
                    deserialize_strings(&target->packages, file) &&

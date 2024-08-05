@@ -47,15 +47,49 @@ bool deserialize_deps(Deps *deps, FILE *file);
 
 typedef Vec(char *) Strings;
 
+// A build target.
 typedef struct Target {
+    // The name of the target.
     char *name;
+
+    // The output kind(s) of the target.
+    //
+    // Can be combined eg. `STATIC | SHARED`.
     Output output;
+
+    // The warning flags to use.
+    //
+    // Example `Wall | Wextra`.
     WarnFlag warn;
+
+    // The language of the target.
+    //
+    // Can be either `C` or `CPP`.
     Language lang;
 
+    // The standard to use.
+    //
+    // Example `c11` or `c++17`.
+    char *std;
+
+    // The sources of the target.
+    //
+    // Do not interact with this directly.
     Strings sources;
+
+    // The includes of the target.
+    //
+    // Do not interact with this directly.
     Strings includes;
+
+    // The packages of the target.
+    //
+    // Do not interact with this directly.
     Strings packages;
+
+    // The dependencies of the target.
+    //
+    // Do not interact with this directly.
     Deps deps;
 } Target;
 

@@ -25,6 +25,7 @@ typedef struct BuildTarget {
     Output output;
     WarnFlag warn;
     Language lang;
+    char *std;
 
     Paths sources;
     Paths includes;

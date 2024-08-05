@@ -213,10 +213,35 @@ static void push_includes(Args *args, const BuildTarget *target) {
     vec_foreach(&target->deps, dep) push_includes(args, dep->target);
 }
 
+static const char *get_compiler(const BuildTarget *target) {
+    char *cc = getenv("CC");
+    char *cxx = getenv("CXX");
+
+    cc = cc ? cc : "clang";
+    cxx = cxx ? cxx : "clang++";
+
+    switch (target->lang) {
+    case C:
+        return cc;
+    case CPP:
+        return cxx;
+    default:
+        return NULL;
+    }
+}
+
 bool build_objects(const BuildTarget *target, const char *outdir) {
     if (!make_dirs(outdir)) {
         printf("Error: Could not create output directory\n");
 
+        return false;
+    }
+
+    // get the compiler for the target, default to clang
+    const char *compiler = get_compiler(target);
+
+    if (!compiler) {
+        printf("Error: No compiler found\n");
         return false;
     }
 
@@ -230,11 +255,17 @@ bool build_objects(const BuildTarget *target, const char *outdir) {
         snprintf(object, sizeof(object), "%s/%s.o", outdir, id);
 
         Args args = args_new();
-        args_push(&args, "clang");
+        args_push(&args, compiler);
         args_push(&args, "-c");
         args_push(&args, source);
         args_push(&args, "-o");
         args_push(&args, object);
+
+        if (target->std) {
+            char std[256];
+            snprintf(std, sizeof(std), "-std=%s", target->std);
+            args_push(&args, std);
+        }
 
         push_includes(&args, target);
 
