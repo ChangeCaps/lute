@@ -2,6 +2,7 @@
 // See end of file for license information.
 
 #include "run.h"
+#include "args.h"
 #include "build.h"
 #include "graph.h"
 
@@ -49,7 +50,23 @@ int run_command(int argc, char **argv) {
     char cmd[256];
     snprintf(cmd, sizeof(cmd), "./%s/%s", outdir, target->name);
 
-    if (system(cmd) != 0) {
+    Args args = args_new();
+    args_push(&args, cmd);
+
+    bool found = false;
+    for (int i = 2; i < argc; i++) {
+        if (strcmp(argv[i], "--") == 0) {
+            found = true;
+            continue;
+        } else if (found) {
+            args_push(&args, argv[i]);
+        }
+    }
+
+    bool success = args_exec(&args);
+    args_free(&args);
+
+    if (!success) {
         printf("Error: Could not run target %s\n", target->name);
         return 1;
     }
