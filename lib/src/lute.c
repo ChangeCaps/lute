@@ -10,12 +10,12 @@ Target *target(Build *b, const char *name, Output kind) {
 }
 
 void source(Target *t, const char *path) {
-    char *source = strdup(path);
+    char *source = realpath(path, NULL);
     vec_push(&t->sources, source);
 }
 
 void include(Target *t, const char *path) {
-    char *include = strdup(path);
+    char *include = realpath(path, NULL);
     vec_push(&t->includes, include);
 }
 
