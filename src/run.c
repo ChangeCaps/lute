@@ -63,7 +63,7 @@ int run_command(int argc, char **argv) {
         }
     }
 
-    bool success = args_exec(&args);
+    bool success = args_exec(&args) == 0;
     args_free(&args);
 
     if (!success) {
