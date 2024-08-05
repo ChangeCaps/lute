@@ -261,11 +261,9 @@ bool build_objects(const BuildTarget *target, const char *outdir) {
         }
 
         printf("Compiled %s\n", source);
-
-        return true;
     }
 
-    return 0;
+    return true;
 }
 
 // This file is part of Lute.
