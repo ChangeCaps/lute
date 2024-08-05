@@ -122,8 +122,6 @@ bool build_target(const BuildTarget *target, Output output,
             printf("Error: Could not build binary %s\n", target->name);
             return false;
         }
-
-        printf("Built binary %s\n", target->name);
     }
 
     if (target->output & output & STATIC) {
@@ -258,8 +256,6 @@ bool build_objects(const BuildTarget *target, const char *outdir) {
             printf("Error: Could not compile %s\n", source);
             return false;
         }
-
-        printf("Compiled %s\n", source);
     }
 
     return true;
