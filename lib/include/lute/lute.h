@@ -11,8 +11,6 @@ void include(Target *target, const char *path);
 void package(Target *target, const char *name);
 void depend(Target *target, const char *uri, const char *deptrg);
 
-int __lute_main(void (*build)(Build *), int argc, char **argv);
-
 // This file is part of Lute.
 // Copyright (C) 2024  Hjalte C. Nannestad
 //
