@@ -8,6 +8,23 @@
 #include "build.h"
 #include "util.h"
 
+static const char *get_compiler(const BuildTarget *target) {
+    char *cc = getenv("CC");
+    char *cxx = getenv("CXX");
+
+    cc = cc ? cc : "clang";
+    cxx = cxx ? cxx : "clang++";
+
+    switch (target->lang) {
+    case C:
+        return cc;
+    case CPP:
+        return cxx;
+    default:
+        return NULL;
+    }
+}
+
 int build_command(int argc, char **argv) {
     BuildGraph graph;
 
@@ -70,6 +87,13 @@ bool build_target(const BuildTarget *target, Output output,
     if (!build_objects(target, outdir))
         return false;
 
+    const char *compiler = get_compiler(target);
+
+    if (!compiler) {
+        printf("Error: No compiler found\n");
+        return false;
+    }
+
     Vec(const char *) objects;
     vec_init(&objects);
 
@@ -93,10 +117,16 @@ bool build_target(const BuildTarget *target, Output output,
         snprintf(binpath, sizeof(binpath), "%s/%s", outdir, target->name);
 
         Args args = args_new();
-        args_push(&args, "clang");
+        args_push(&args, compiler);
         args_push(&args, objs);
         args_push(&args, "-o");
         args_push(&args, binpath);
+
+        if (target->std) {
+            char std[256];
+            snprintf(std, sizeof(std), "-std=%s", target->std);
+            args_push(&args, std);
+        }
 
         vec_foreach(&target->packages, package) {
             args_push(&args, package->libs);
@@ -169,11 +199,17 @@ bool build_target(const BuildTarget *target, Output output,
 
         Args args = args_new();
 
-        args_push(&args, "clang");
+        args_push(&args, compiler);
         args_push(&args, "-shared");
         args_push(&args, objs);
         args_push(&args, "-o");
         args_push(&args, libpath);
+
+        if (target->std) {
+            char std[256];
+            snprintf(std, sizeof(std), "-std=%s", target->std);
+            args_push(&args, std);
+        }
 
         vec_foreach(&target->packages, package) {
             args_push(&args, package->libs);
@@ -211,23 +247,6 @@ static void push_includes(Args *args, const BuildTarget *target) {
     }
 
     vec_foreach(&target->deps, dep) push_includes(args, dep->target);
-}
-
-static const char *get_compiler(const BuildTarget *target) {
-    char *cc = getenv("CC");
-    char *cxx = getenv("CXX");
-
-    cc = cc ? cc : "clang";
-    cxx = cxx ? cxx : "clang++";
-
-    switch (target->lang) {
-    case C:
-        return cc;
-    case CPP:
-        return cxx;
-    default:
-        return NULL;
-    }
 }
 
 bool build_objects(const BuildTarget *target, const char *outdir) {
