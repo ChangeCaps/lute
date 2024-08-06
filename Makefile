@@ -9,18 +9,18 @@ SOURCES = $(wildcard src/*.c)
 OBJECTS = $(SOURCES:src/%.c=out/%.o)
 DEPENDS = $(OBJECTS:.o=.d)
 
-all: out/lute out/lib/lutebuild.o
+all: out out/lib out/lute out/lib/lutebuild.o
 
 clean:
 	rm -rf out
 
-out/:
+out:
 	mkdir -p out
 
-out/lib/: out/
+out/lib: out
 	mkdir -p out/lib
 
-out/lib/%.o: lib/src/%.c out/lib/
+out/lib/%.o: lib/src/%.c
 	$(CC) $(CCFLAGS) -MMD -MP -c $< -o $@
 
 out/lib/lutebuild.o: $(LIB_OBJECTS)
@@ -28,7 +28,7 @@ out/lib/lutebuild.o: $(LIB_OBJECTS)
 	ld -r $(LIB_OBJECTS) out/lib/main.o -o out/lib/lutebuild.o
 	
 
-out/%.o: src/%.c out/
+out/%.o: src/%.c
 	$(CC) $(CCFLAGS) -MMD -MP -c $< -o $@
 
 -include $(LIB_DEPENDS)
