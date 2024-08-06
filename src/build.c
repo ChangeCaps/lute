@@ -121,6 +121,7 @@ bool build_target(const BuildTarget *target, Output output,
         args_push(&args, objs);
         args_push(&args, "-o");
         args_push(&args, binpath);
+        args_push(&args, "-ggdb");
 
         if (target->std) {
             char std[256];
@@ -166,6 +167,7 @@ bool build_target(const BuildTarget *target, Output output,
         args_push(&args, "rcs");
         args_push(&args, libpath);
         args_push(&args, objs);
+        args_push(&args, "-ggdb");
 
         vec_foreach(&target->packages, package) {
             args_push(&args, package->libs);
@@ -204,6 +206,7 @@ bool build_target(const BuildTarget *target, Output output,
         args_push(&args, objs);
         args_push(&args, "-o");
         args_push(&args, libpath);
+        args_push(&args, "-ggdb");
 
         if (target->std) {
             char std[256];
@@ -279,6 +282,7 @@ bool build_objects(const BuildTarget *target, const char *outdir) {
         args_push(&args, source);
         args_push(&args, "-o");
         args_push(&args, object);
+        args_push(&args, "-ggdb");
 
         if (target->std) {
             char std[256];
