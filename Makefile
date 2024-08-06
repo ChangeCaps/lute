@@ -26,7 +26,6 @@ out/lib/%.o: lib/src/%.c
 out/lib/lutebuild.o: $(LIB_OBJECTS)
 	$(CC) $(CCFLAGS) -c lib/main.c -o out/lib/main.o
 	ld -r $(LIB_OBJECTS) out/lib/main.o -o out/lib/lutebuild.o
-	
 
 out/%.o: src/%.c
 	$(CC) $(CCFLAGS) -MMD -MP -c $< -o $@
