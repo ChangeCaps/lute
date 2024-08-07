@@ -9,18 +9,20 @@
 #include "util.h"
 
 void print_install_usage() {
-    printf(
-        "Usage: lute install [target] [options]\n"
-        "\n"
-        "Options:\n"
-        "  -h, --help                Show this help message\n"
-        "  -n, --dry                 "
-        "Only print actions, without performing them\n"
-        "      --no-build            Do not build the target\n"
-        "      --bin-path            Set the binary installation path\n"
-        "      --lib-path            Set the library installation path\n"
-        "      --include-path        Set the include installation path\n"
-        "      --pkg-config-path     Set the pkg-config installation path\n");
+    printf("Usage: lute install [target] [options]\n"
+           "\n"
+           "Options:\n"
+           "  -h, --help                Show this help message\n"
+           "  -n, --dry                 "
+           "Only print actions, without performing them\n"
+           "      --no-build            Do not build the target\n"
+           "      --bin-path            Set the binary installation path\n"
+           "      --lib-path            Set the library installation path\n"
+           "      --include-path        Set the include installation path\n"
+           "      --pkg-config-path     Set the pkg-config installation path\n"
+           "\n"
+           "Platform-specific options:\n"
+           "      --nix                 Install on a NixOS system\n");
 }
 
 void print_install_help() {
@@ -61,6 +63,38 @@ bool install_options_parse(InstallOptions *options, int argc, char **argv,
             options->include_path = argv[(*argi)++];
         } else if (arg_is(arg, NULL, "--pkg-config-path")) {
             options->pkg_config_path = argv[(*argi)++];
+        } else if (arg_is(arg, NULL, "--nix")) {
+            char *out = getenv("out");
+            char *lib = getenv("lib");
+            char *dev = getenv("dev");
+
+            if (!out || !lib || !dev) {
+                printf("Nix environment variables not set\n");
+                printf("Make sure you are running this command in a Nix "
+                       "stdenv derivation\n");
+                return false;
+            }
+
+            // yes, this is a memory leak
+            // no, I don't care
+            char *bin_path = malloc(strlen(out) + strlen("/bin") + 1);
+            char *include_path = malloc(strlen(dev) + strlen("/include") + 1);
+            char *pkg_config_path =
+                malloc(strlen(dev) + strlen("/lib/pkgconfig") + 1);
+
+            strcpy(bin_path, out);
+            strcat(bin_path, "/bin");
+
+            strcpy(include_path, dev);
+            strcat(include_path, "/include");
+
+            strcpy(pkg_config_path, dev);
+            strcat(pkg_config_path, "/lib/pkgconfig");
+
+            options->bin_path = bin_path;
+            options->lib_path = lib;
+            options->include_path = include_path;
+            options->pkg_config_path = pkg_config_path;
         } else {
             printf("Unknown option: %s\n", arg);
             return false;
