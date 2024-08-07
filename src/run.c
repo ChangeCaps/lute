@@ -61,7 +61,7 @@ int run_command(int argc, char **argv) {
     }
 
     char outdir[256];
-    snprintf(outdir, sizeof(outdir), "out/%s", target->name);
+    snprintf(outdir, sizeof(outdir), "lute-out/%s", target->name);
 
     if (!build_target(&options, target, BINARY, outdir)) {
         printf("Build of target %s failed, exiting\n", target->name);

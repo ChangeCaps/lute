@@ -4,12 +4,16 @@
 #include <stdio.h>
 
 #include "clean.h"
+#include "util.h"
 
 int clean_command(int argc, char **argv) {
     (void)argc;
     (void)argv;
 
-    printf("Cleaning targets\n");
+    printf("Cleaning...\n");
+
+    remove_dir("lute-out");
+    remove_dir("lute-cache");
 
     return 0;
 }

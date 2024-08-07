@@ -10,6 +10,7 @@ bool is_dir(const char *path);
 bool make_dir(const char *path);
 bool make_dirs(const char *path);
 bool read_file(const char *path, char **data);
+bool remove_dir(const char *path);
 
 // This file is part of Lute.
 // Copyright (C) 2024  Hjalte C. Nannestad

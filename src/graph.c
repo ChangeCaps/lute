@@ -338,7 +338,7 @@ bool build_graph_load_deps(BuildGraph *graph, BuildNode *node) {
             }
 
             char path[256];
-            snprintf(path, sizeof(path), ".lute/deps/%s", dep->id);
+            snprintf(path, sizeof(path), "lute-cache/deps/%s", dep->id);
 
             // if dep is not fetched, fetch it
             if (!is_dir(path)) {
@@ -351,7 +351,7 @@ bool build_graph_load_deps(BuildGraph *graph, BuildNode *node) {
             snprintf(bpath, sizeof(bpath), "%s/build.c", path);
 
             char opath[256];
-            snprintf(opath, sizeof(opath), ".lute/build/%s", dep->id);
+            snprintf(opath, sizeof(opath), "lute-cache/build/%s", dep->id);
 
             // load dep node
             BuildNode *dep_node = build_graph_load_node(graph, bpath, opath);
@@ -387,21 +387,22 @@ bool build_graph_load_deps(BuildGraph *graph, BuildNode *node) {
 }
 
 bool build_graph_load(BuildGraph *graph) {
-    if (!make_dirs("out")) {
+    if (!make_dirs("lute-out")) {
         return false;
     }
 
-    if (!make_dirs(".lute/deps")) {
+    if (!make_dirs("lute-cache/deps")) {
         return false;
     }
 
-    if (!make_dirs(".lute/build")) {
+    if (!make_dirs("lute-cache/build")) {
         return false;
     }
 
     build_graph_init(graph);
 
-    graph->root = build_graph_load_node(graph, "build.c", ".lute/build/build");
+    graph->root =
+        build_graph_load_node(graph, "build.c", "lute-cache/build/build");
 
     if (!graph->root) {
         build_graph_free(graph);

@@ -117,7 +117,7 @@ int build_command(int argc, char **argv) {
     }
 
     char outdir[256];
-    snprintf(outdir, sizeof(outdir), "out/%s", target->name);
+    snprintf(outdir, sizeof(outdir), "lute-out/%s", target->name);
 
     if (!build_target(&options, target, target->output, outdir)) {
         printf("Build of target %s failed, exiting\n", target->name);
@@ -142,7 +142,8 @@ bool build_target(const BuildOptions *options, const BuildTarget *target,
 
     vec_foreach(&target->deps, dep) {
         char depoutdir[256];
-        snprintf(depoutdir, sizeof(depoutdir), ".lute/deps/out/%s", dep->id);
+        snprintf(depoutdir, sizeof(depoutdir), "lute-cache/deps/out/%s",
+                 dep->id);
 
         if (!build_target(options, dep->node->targets.data, STATIC | BINARY,
                           depoutdir))
@@ -213,7 +214,7 @@ bool build_target(const BuildOptions *options, const BuildTarget *target,
                 continue;
 
             char depoutdir[256];
-            snprintf(depoutdir, sizeof(depoutdir), ".lute/deps/out/%s",
+            snprintf(depoutdir, sizeof(depoutdir), "lute-cache/deps/out/%s",
                      dep->id);
 
             args_push(&args, "-L");
@@ -253,7 +254,7 @@ bool build_target(const BuildOptions *options, const BuildTarget *target,
                 continue;
 
             char deplib[256];
-            snprintf(deplib, sizeof(deplib), ".lute/deps/out/%s/lib%s.a",
+            snprintf(deplib, sizeof(deplib), "lute-cache/deps/out/%s/lib%s.a",
                      dep->id, dep->name);
 
             args_push(&args, deplib);
@@ -307,7 +308,7 @@ bool build_target(const BuildOptions *options, const BuildTarget *target,
                 continue;
 
             char depoutdir[256];
-            snprintf(depoutdir, sizeof(depoutdir), ".lute/deps/out/%s",
+            snprintf(depoutdir, sizeof(depoutdir), "lute-cache/deps/out/%s",
                      dep->id);
 
             args_push(&args, "-L");

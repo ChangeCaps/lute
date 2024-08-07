@@ -1,10 +1,12 @@
 // Copyright (C) 2024  Hjalte C. Nannestad
 // See end of file for license information.
 
+#include <dirent.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 #include "util.h"
 
@@ -79,6 +81,43 @@ bool read_file(const char *path, char **data) {
     fclose(file);
 
     return true;
+}
+
+bool remove_dir(const char *path) {
+    if (!is_dir(path)) {
+        remove(path);
+        return true;
+    }
+
+    DIR *dir = opendir(path);
+
+    if (!dir) {
+        return false;
+    }
+
+    struct dirent *entry;
+
+    while ((entry = readdir(dir))) {
+        if (strcmp(entry->d_name, ".") == 0 ||
+            strcmp(entry->d_name, "..") == 0) {
+            continue;
+        }
+
+        char *full = malloc(strlen(path) + strlen(entry->d_name) + 2);
+        sprintf(full, "%s/%s", path, entry->d_name);
+
+        if (is_dir(full)) {
+            remove_dir(full);
+        } else {
+            remove(full);
+        }
+
+        free(full);
+    }
+
+    closedir(dir);
+
+    return rmdir(path) == 0;
 }
 
 // This file is part of Lute.
