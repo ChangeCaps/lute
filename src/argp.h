@@ -7,8 +7,14 @@
 
 #include "graph.h"
 
+// Check if an argument is a flag with the given short and long name.
+//
+// Short and long names can be NULL, in which case they are ignored.
 bool arg_is(const char *arg, const char *short_name, const char *long_name);
 
+// Select a target from the command line arguments.
+//
+// If a target is not found, NULL is returned.
 BuildTarget *select_target(const BuildGraph *graph, int argc, char **argv,
                            int *argi);
 

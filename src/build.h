@@ -6,8 +6,8 @@
 #include "graph.h"
 
 typedef enum {
-    DEBUG,
-    RELEASE,
+    PROFILE_DEBUG,
+    PROFILE_RELEASE,
 } Profile;
 
 typedef struct {

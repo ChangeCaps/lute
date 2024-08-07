@@ -46,9 +46,9 @@ void print_build_help() {
 
 const char *profile_name(Profile profile) {
     switch (profile) {
-    case DEBUG:
+    case PROFILE_DEBUG:
         return "debug";
-    case RELEASE:
+    case PROFILE_RELEASE:
         return "release";
     }
 }
@@ -56,7 +56,7 @@ const char *profile_name(Profile profile) {
 BuildOptions build_options_default() {
     BuildOptions options = {0};
     options.help = false;
-    options.profile = DEBUG;
+    options.profile = PROFILE_DEBUG;
     return options;
 }
 
@@ -69,9 +69,9 @@ bool build_options_parse(BuildOptions *options, int argc, char **argv,
         if (arg_is(arg, "-h", "--help")) {
             options->help = true;
         } else if (arg_is(arg, "-r", "--release")) {
-            options->profile = RELEASE;
+            options->profile = PROFILE_RELEASE;
         } else if (arg_is(arg, "-d", "--debug")) {
-            options->profile = DEBUG;
+            options->profile = PROFILE_DEBUG;
         } else if (arg_is(arg, "--", NULL)) {
             break;
         } else {
@@ -126,10 +126,10 @@ bool build_target(const BuildOptions *options, const BuildTarget *target,
     printf("Building target %s", target->name);
 
     switch (options->profile) {
-    case DEBUG:
+    case PROFILE_DEBUG:
         printf("[debug]\n");
         break;
-    case RELEASE:
+    case PROFILE_RELEASE:
         printf("[release]\n");
         break;
     }
@@ -184,11 +184,11 @@ bool build_target(const BuildOptions *options, const BuildTarget *target,
         args_push(&args, "-g");
 
         switch (options->profile) {
-        case DEBUG:
+        case PROFILE_DEBUG:
             args_push(&args, "-g");
             args_push(&args, "-O1");
             break;
-        case RELEASE:
+        case PROFILE_RELEASE:
             args_push(&args, "-O3");
             break;
         }
@@ -278,11 +278,11 @@ bool build_target(const BuildOptions *options, const BuildTarget *target,
         args_push(&args, libpath);
 
         switch (options->profile) {
-        case DEBUG:
+        case PROFILE_DEBUG:
             args_push(&args, "-g");
             args_push(&args, "-O1");
             break;
-        case RELEASE:
+        case PROFILE_RELEASE:
             args_push(&args, "-O3");
             break;
         }
@@ -369,11 +369,11 @@ bool build_objects(const BuildOptions *options, const BuildTarget *target,
         args_push(&args, "-MD");
 
         switch (options->profile) {
-        case DEBUG:
+        case PROFILE_DEBUG:
             args_push(&args, "-g");
             args_push(&args, "-O1");
             break;
-        case RELEASE:
+        case PROFILE_RELEASE:
             args_push(&args, "-O3");
             break;
         }
