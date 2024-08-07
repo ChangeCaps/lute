@@ -47,7 +47,7 @@ bool list_options_parse(ListOptions *options, int argc, char **argv,
         } else if (arg_is(arg, NULL, "--full")) {
             options->output = LIST_OUTPUT_ALL;
         } else {
-            printf("Unknown option: %s\n\n", arg);
+            printf("Unknown option: %s\n", arg);
             return false;
         }
     }
