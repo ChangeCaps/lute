@@ -73,6 +73,9 @@ int run_command(int argc, char **argv, int *argi) {
     Args args = args_new();
     args_push(&args, cmd);
 
+    for (; *argi < argc; (*argi)++)
+        args_push(&args, argv[*argi]);
+
     int status = args_exec(&args);
     args_free(&args);
 
