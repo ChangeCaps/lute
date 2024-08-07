@@ -23,8 +23,9 @@ bool build_options_parse(BuildOptions *options, int argc, char **argv,
 
 int build_command(int argc, char **argv, int *argi);
 
-void build_help_command();
-void help_build_options();
+void print_build_options();
+void print_build_usage();
+void print_build_help();
 
 bool build_target(const BuildOptions *options, const BuildTarget *target,
                   Output output, const char *outdir);

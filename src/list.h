@@ -3,6 +3,18 @@
 
 #pragma once
 
+#include <stdbool.h>
+
+typedef struct {
+    bool help;
+} ListOptions;
+
+ListOptions list_options_default();
+bool list_options_parse(ListOptions *options, int argc, char **argv, int *argi);
+
+void print_list_usage();
+void print_list_help();
+
 int list_command(int argc, char **argv, int *argi);
 
 // This file is part of Lute.

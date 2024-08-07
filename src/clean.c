@@ -3,18 +3,72 @@
 
 #include <stdio.h>
 
+#include "argp.h"
 #include "clean.h"
 #include "util.h"
 
+void print_clean_usage() {
+    printf("Usage: lute clean [options]\n"
+           "\n"
+           "Options:\n"
+           "  -h --help    Show this help message\n");
+}
+
+void print_clean_help() {
+    printf("Clean build artifacts\n\n");
+    print_clean_usage();
+}
+
+CleanOptions clean_options_default() {
+    CleanOptions options = {0};
+
+    options.help = false;
+
+    return options;
+}
+
+bool clean_options_parse(CleanOptions *options, int argc, char **argv,
+                         int *argi) {
+
+    while (*argi < argc) {
+        char *arg = argv[(*argi)++];
+
+        if (arg_is(arg, "-h", "--help")) {
+            options->help = true;
+        } else {
+            printf("Unknown option: %s\n", arg);
+            return false;
+        }
+    }
+
+    return true;
+}
+
 int clean_command(int argc, char **argv, int *argi) {
-    (void)argc;
-    (void)argv;
-    (void)argi;
+    CleanOptions options = clean_options_default();
 
-    printf("Cleaning...\n");
+    if (!clean_options_parse(&options, argc, argv, argi)) {
+        printf("\n");
+        print_clean_usage();
+        return 1;
+    }
 
-    remove_dir("lute-out");
-    remove_dir("lute-cache");
+    if (options.help) {
+        print_clean_help();
+        return 0;
+    }
+
+    printf("Cleaning build artifacts\n");
+
+    if (file_exists("lute-out")) {
+        printf("Removing lute-out\n");
+        remove_dir("lute-out");
+    }
+
+    if (file_exists("lute-cache")) {
+        printf("Removing lute-cache\n");
+        remove_dir("lute-cache");
+    }
 
     return 0;
 }

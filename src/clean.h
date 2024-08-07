@@ -3,6 +3,19 @@
 
 #pragma once
 
+#include <stdbool.h>
+
+typedef struct {
+    bool help;
+} CleanOptions;
+
+CleanOptions clean_options_default();
+bool clean_options_parse(CleanOptions *options, int argc, char **argv,
+                         int *argi);
+
+void print_clean_usage();
+void print_clean_help();
+
 int clean_command(int argc, char **argv, int *argi);
 
 // This file is part of Lute.

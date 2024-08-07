@@ -3,7 +3,9 @@
 
 #pragma once
 
-void run_help_command();
+void print_run_usage();
+void print_run_help();
+
 int run_command(int argc, char **argv, int *argi);
 
 // This file is part of Lute.

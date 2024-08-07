@@ -13,25 +13,28 @@
 #include "list.h"
 #include "run.h"
 
-void help_lute() {
-    printf("Usage: lute [options] [command]\n");
-    printf("\n");
-    printf("Options:\n");
-    printf("  -h, --help    Show this help message\n");
-    printf("\n");
-    printf("Commands:\n");
-    printf("  run, r        Build and run a target\n");
-    printf("  build, b      Build a target\n");
-    printf("  clean         Clean build artifacts\n");
-    printf("  list          List available targets\n");
-    printf("  help          Show this help message\n");
+void print_lute_usage() {
+    printf("Usage: lute [options] [command]\n"
+           "\n"
+           "Options:\n"
+           "  -h, --help    Show this help message\n"
+           "\n"
+           "Commands:\n"
+           "  run, r        Build and run a target\n"
+           "  build, b      Build a target\n"
+           "  clean         Clean build artifacts\n"
+           "  list          List available targets\n"
+           "  help          Show this help message\n");
+}
+
+void print_lute_help() {
+    printf("Lute - A simple build system for C/C++ projects\n\n");
 }
 
 int main(int argc, char **argv) {
     if (argc < 2) {
-        help_lute();
-        printf("\n");
-        printf("Error: No command specified\n");
+        printf("No command specified\n\n");
+        print_lute_usage();
         return 1;
     }
 
@@ -49,10 +52,10 @@ int main(int argc, char **argv) {
         } else if (arg_is(arg, NULL, "list")) {
             return list_command(argc, argv, &argi);
         } else if (arg_is(arg, NULL, "help") || arg_is(arg, "-h", "--help")) {
-            help_lute();
+            print_lute_help();
         } else {
-            printf("Unknown argument: %s\n", arg);
-            help_lute();
+            printf("Unknown argument: %s\n\n", arg);
+            print_lute_usage();
         }
     }
 

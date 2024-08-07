@@ -7,11 +7,16 @@
 #include "build.h"
 #include "graph.h"
 
-void run_help_command() {
-    printf("Usage: lute run [target] [options] [-- [args]]\n");
-    printf("\n");
-    printf("Options:\n");
-    help_build_options();
+void print_run_usage() {
+    printf("Usage: lute run [target] [options] [-- [args]]\n"
+           "\n"
+           "Options:\n");
+    print_build_options();
+}
+
+void print_run_help() {
+    printf("Build and run a target\n\n");
+    print_run_usage();
 }
 
 int run_command(int argc, char **argv, int *argi) {
@@ -30,11 +35,13 @@ int run_command(int argc, char **argv, int *argi) {
     BuildOptions options = build_options_default();
 
     if (!build_options_parse(&options, argc, argv, argi)) {
+        printf("\n");
+        print_run_usage();
         return 1;
     }
 
     if (options.help) {
-        run_help_command();
+        print_run_help();
         return 0;
     }
 

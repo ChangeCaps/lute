@@ -14,6 +14,7 @@ bool arg_is(const char *arg, const char *short_name, const char *long_name) {
 
 BuildTarget *select_target(const BuildGraph *graph, int argc, char **argv,
                            int *argi) {
+
     BuildTarget *target = NULL;
 
     if (argc > 2 && is_valid_target_name(argv[2])) {
@@ -25,13 +26,13 @@ BuildTarget *select_target(const BuildGraph *graph, int argc, char **argv,
         (*argi)++;
 
         if (!target) {
-            printf("Error: Target %s not found\n", argv[2]);
+            printf("Target %s not found\n", argv[2]);
             return NULL;
         }
     }
 
     if (!target && graph->root->targets.len != 1) {
-        printf("Error: No target specified and no default target found\n");
+        printf("No target specified and no default target found\n");
         return NULL;
     } else if (!target) {
         target = graph->root->targets.data;

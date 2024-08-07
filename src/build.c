@@ -26,17 +26,22 @@ static const char *get_compiler(const BuildTarget *target) {
     }
 }
 
-void help_build_options() {
-    printf("  -h --help                 Show this help message\n");
-    printf("  -r --release              Build with release profile\n");
-    printf("  -d --debug (default)      Build with debug profile\n");
+void print_build_options() {
+    printf("  -h --help                 Show this help message\n"
+           "  -r --release              Build with release profile\n"
+           "  -d --debug (default)      Build with debug profile\n");
 }
 
-void build_help_command() {
-    printf("Usage: lute build [target] [options]\n");
-    printf("\n");
-    printf("Options:\n");
-    help_build_options();
+void print_build_usage() {
+    printf("Usage: lute build [target] [options]\n"
+           "\n"
+           "Options:\n");
+    print_build_options();
+}
+
+void print_build_help() {
+    printf("Build a target\n\n");
+    print_build_usage();
 }
 
 const char *profile_name(Profile profile) {
@@ -70,7 +75,7 @@ bool build_options_parse(BuildOptions *options, int argc, char **argv,
         } else if (arg_is(arg, "--", NULL)) {
             break;
         } else {
-            printf("Error: Unknown option %s\n", arg);
+            printf("Unknown option: %s\n", arg);
             return false;
         }
     }
@@ -94,11 +99,13 @@ int build_command(int argc, char **argv, int *argi) {
     BuildOptions options = build_options_default();
 
     if (!build_options_parse(&options, argc, argv, argi)) {
+        printf("\n");
+        print_build_usage();
         return 1;
     }
 
     if (options.help) {
-        build_help_command();
+        print_build_help();
         return 0;
     }
 
