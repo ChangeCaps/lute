@@ -29,6 +29,7 @@ void print_lute_usage() {
 
 void print_lute_help() {
     printf("Lute - A simple build system for C/C++ projects\n\n");
+    print_lute_usage();
 }
 
 int main(int argc, char **argv) {
