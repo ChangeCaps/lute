@@ -8,43 +8,74 @@
 
 #include "vector.h"
 
+// Outputs of a target.
 typedef enum Output {
+    // A binary target.
     BINARY = 1 << 0,
+
+    // A static library target.
     STATIC = 1 << 1,
+
+    // A shared library target.
     SHARED = 1 << 2,
+
+    // A header-only library target.
     HEADER = 1 << 3,
 
     LIBRARY = STATIC | SHARED,
 } Output;
 
+// Warning flags.
 typedef enum WarnFlag {
+    // Enable all warnings.
     Wall = 1 << 0,
+
+    // Enable extra warnings.
     Wextra = 1 << 1,
+
+    // Enable warnings as errors.
     Werror = 1 << 2,
 } WarnFlag;
 
+// Languages of a target.
 typedef enum Language {
+    // The C language.
     C = 0,
+    // The C++ language.
     CPP = 1,
 } Language;
 
+// A dependency.
 typedef struct Dep {
+    // The git repository URL of the dependency.
     char *url;
+
+    // The name of the target to depend on.
     char *target;
 } Dep;
 
+// A list of dependencies.
 typedef Vec(Dep) Deps;
 
+// Initialize a dependency.
 void dep_init(Dep *dep, const char *name, const char *target);
+
+// Free a dependency.
 void dep_free(Dep *dep);
 
+// Serialize a dependency to a file.
 void serialize_dep(const Dep *dep, FILE *file);
+
+// Deserialize a dependency from a file.
 bool deserialize_dep(Dep *dep, FILE *file);
 
+// Free a list of dependencies.
 void deps_free(Deps *deps);
 
+// Deserialize a list of dependencies from a file.
 bool deserialize_deps(Deps *deps, FILE *file);
 
+// A list of strings.
 typedef Vec(char *) Strings;
 
 // A build target.

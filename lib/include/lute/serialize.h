@@ -9,7 +9,10 @@
 #define serialize_data(data, file) fwrite(data, sizeof(*(data)), 1, file)
 #define deserialize_data(data, file) fread(data, sizeof(*(data)), 1, file)
 
+// Serialize a string to a file.
 void serialize_str(const char *string, FILE *file);
+
+// Deserialize a string from a file.
 bool deserialize_str(char **string, FILE *file);
 
 // This file is part of Lute.

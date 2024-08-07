@@ -5,11 +5,25 @@
 
 #include "build.h"
 
+// Add a target to a build.
 Target *target(Build *build, const char *name, Output kind);
+
+// Add a source file to a target.
+//
+// If the path is a directory, all files in the directory are added recursively.
 void source(Target *target, const char *path);
+
+// Add an include path to a target.
 void include(Target *target, const char *path);
+
+// Add a pkg-config package to a target.
 void package(Target *target, const char *name);
-void depend(Target *target, const char *uri, const char *deptrg);
+
+// Add a dependency to a target.
+//
+// The url is a git repository URL. The deptrg is the name of the target to
+// depend on.
+void depend(Target *target, const char *url, const char *deptrg);
 
 // This file is part of Lute.
 // Copyright (C) 2024  Hjalte C. Nannestad
