@@ -142,7 +142,7 @@ bool build_target(const BuildOptions *options, const BuildTarget *target,
 
     vec_foreach(&target->deps, dep) {
         char depoutdir[256];
-        snprintf(depoutdir, sizeof(depoutdir), "out/deps/%s", dep->id);
+        snprintf(depoutdir, sizeof(depoutdir), ".lute/deps/out/%s", dep->id);
 
         if (!build_target(options, dep->node->targets.data, STATIC | BINARY,
                           depoutdir))
@@ -213,7 +213,8 @@ bool build_target(const BuildOptions *options, const BuildTarget *target,
                 continue;
 
             char depoutdir[256];
-            snprintf(depoutdir, sizeof(depoutdir), "out/deps/%s", dep->id);
+            snprintf(depoutdir, sizeof(depoutdir), ".lute/deps/out/%s",
+                     dep->id);
 
             args_push(&args, "-L");
             args_push(&args, depoutdir);
@@ -252,8 +253,8 @@ bool build_target(const BuildOptions *options, const BuildTarget *target,
                 continue;
 
             char deplib[256];
-            snprintf(deplib, sizeof(deplib), "out/deps/%s/lib%s.a", dep->id,
-                     dep->name);
+            snprintf(deplib, sizeof(deplib), ".lute/deps/out/%s/lib%s.a",
+                     dep->id, dep->name);
 
             args_push(&args, deplib);
         }
@@ -306,7 +307,8 @@ bool build_target(const BuildOptions *options, const BuildTarget *target,
                 continue;
 
             char depoutdir[256];
-            snprintf(depoutdir, sizeof(depoutdir), "out/deps/%s", dep->id);
+            snprintf(depoutdir, sizeof(depoutdir), ".lute/deps/out/%s",
+                     dep->id);
 
             args_push(&args, "-L");
             args_push(&args, depoutdir);
