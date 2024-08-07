@@ -33,9 +33,8 @@ void print_lute_help() {
 
 int main(int argc, char **argv) {
     if (argc < 2) {
-        printf("No command specified\n\n");
-        print_lute_usage();
-        return 1;
+        print_lute_help();
+        return 0;
     }
 
     int argi = 1;
