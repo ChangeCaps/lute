@@ -22,6 +22,9 @@ typedef enum Output {
     // A header-only library target.
     HEADER = 1 << 3,
 
+    // A test target.
+    TEST = 1 << 4,
+
     LIBRARY = STATIC | SHARED,
 } Output;
 
