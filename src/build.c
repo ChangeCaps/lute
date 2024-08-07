@@ -27,9 +27,9 @@ static const char *get_compiler(const BuildTarget *target) {
 }
 
 void print_build_options() {
-    printf("  -h --help                 Show this help message\n"
-           "  -r --release              Build with release profile\n"
-           "  -d --debug (default)      Build with debug profile\n");
+    printf("  -h, --help                Show this help message\n"
+           "  -r, --release             Build with release profile\n"
+           "  -d, --debug (default)     Build with debug profile\n");
 }
 
 void print_build_usage() {

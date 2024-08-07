@@ -17,14 +17,14 @@ void print_lute_usage() {
     printf("Usage: lute [options] [command]\n"
            "\n"
            "Options:\n"
-           "  -h, --help    Show this help message\n"
+           "  -h, --help        Show this help message\n"
            "\n"
            "Commands:\n"
-           "  run, r        Build and run a target\n"
-           "  build, b      Build a target\n"
-           "  clean         Clean build artifacts\n"
-           "  list          List available targets\n"
-           "  help          Show this help message\n");
+           "  run, r            Build and run a target\n"
+           "  build, b          Build a target\n"
+           "  clean             Clean build artifacts\n"
+           "  list              List available targets\n"
+           "  help              Show this help message\n");
 }
 
 void print_lute_help() {

@@ -11,7 +11,7 @@ void print_clean_usage() {
     printf("Usage: lute clean [options]\n"
            "\n"
            "Options:\n"
-           "  -h --help    Show this help message\n");
+           "  -h, --help        Show this help message\n");
 }
 
 void print_clean_help() {

@@ -9,11 +9,11 @@ void print_list_usage() {
     printf("Usage: lute list [options]\n"
            "\n"
            "Options:\n"
-           "  -h --help     Show this help message\n"
-           "     --none     Show only target names\n"
-           "     --lang     Show target language\n"
-           "     --src      Show target sources\n"
-           "     --full     Show full target information\n");
+           "  -h, --help        Show this help message\n"
+           "      --none        Show only target names\n"
+           "      --lang        Show target language\n"
+           "      --src         Show target sources\n"
+           "      --full        Show full target information\n");
 }
 
 void print_list_help() {
