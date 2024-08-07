@@ -52,6 +52,7 @@ int main(int argc, char **argv) {
             return list_command(argc, argv, &argi);
         } else if (arg_is(arg, NULL, "help") || arg_is(arg, "-h", "--help")) {
             print_lute_help();
+            return 0;
         } else {
             printf("Unknown argument: %s\n\n", arg);
             print_lute_usage();
