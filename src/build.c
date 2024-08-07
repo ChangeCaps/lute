@@ -39,6 +39,15 @@ void build_help_command() {
     help_build_options();
 }
 
+const char *profile_name(Profile profile) {
+    switch (profile) {
+    case DEBUG:
+        return "debug";
+    case RELEASE:
+        return "release";
+    }
+}
+
 BuildOptions build_options_default() {
     BuildOptions options = {0};
     options.help = false;
@@ -111,7 +120,8 @@ int build_command(int argc, char **argv, int *argi) {
     }
 
     char outdir[256];
-    snprintf(outdir, sizeof(outdir), "lute-out/%s", target->name);
+    snprintf(outdir, sizeof(outdir), "lute-out/%s/%s",
+             profile_name(options.profile), target->name);
 
     if (!build_target(&options, target, target->output, outdir)) {
         printf("Build of target %s failed, exiting\n", target->name);
@@ -136,8 +146,8 @@ bool build_target(const BuildOptions *options, const BuildTarget *target,
 
     vec_foreach(&target->deps, dep) {
         char depoutdir[256];
-        snprintf(depoutdir, sizeof(depoutdir), "lute-cache/deps/out/%s",
-                 dep->id);
+        snprintf(depoutdir, sizeof(depoutdir), "lute-cache/deps/out/%s/%s",
+                 profile_name(options->profile), dep->id);
 
         if (!build_target(options, dep->node->targets.data, STATIC | BINARY,
                           depoutdir))
@@ -349,13 +359,16 @@ bool build_objects(const BuildOptions *options, const BuildTarget *target,
     }
 
     vec_foreach(&target->sources, source) {
-        printf("Compiling %s\n", source);
-
         HashId id;
         hash_string(id, "obj", source);
 
         char object[256];
         snprintf(object, sizeof(object), "%s/%s.o", outdir, id);
+
+        if (!build_should_compile_object(object))
+            continue;
+
+        printf("Compiling %s\n", source);
 
         Args args = args_new();
         args_push(&args, compiler);
@@ -363,6 +376,7 @@ bool build_objects(const BuildOptions *options, const BuildTarget *target,
         args_push(&args, source);
         args_push(&args, "-o");
         args_push(&args, object);
+        args_push(&args, "-MD");
 
         switch (options->profile) {
         case DEBUG:
@@ -403,6 +417,90 @@ bool build_objects(const BuildOptions *options, const BuildTarget *target,
     }
 
     return true;
+}
+
+bool build_should_compile_object(const char *object) {
+    if (!file_exists(object))
+        return true;
+
+    time_t modified;
+
+    if (!last_modified(object, &modified))
+        return true;
+
+    char *depfile = strdup(object);
+    depfile[strlen(depfile) - 1] = 'd';
+
+    FILE *file = fopen(depfile, "r");
+
+    if (!file) {
+        free(depfile);
+        return true;
+    }
+
+    char line[256];
+
+    if (!fgets(line, sizeof(line), file)) {
+        printf("Error: Dependency file is empty\n");
+
+        fclose(file);
+        free(depfile);
+        return true;
+    }
+
+    char *start = strrchr(line, ':');
+
+    if (!start) {
+        printf("Error: Dependency file is malformed\n");
+
+        fclose(file);
+        free(depfile);
+        return true;
+    }
+
+    *start = '\0';
+
+    if (strcmp(object, line) != 0) {
+        printf("Error: Dependency file does not match object file\n");
+
+        fclose(file);
+        free(depfile);
+        return true;
+    }
+
+    while (fgets(line, sizeof(line), file)) {
+        char *dep = line;
+
+        while (*dep == ' ')
+            dep++;
+
+        char *end = strchr(dep, ' ');
+        if (end)
+            *end = '\0';
+
+        char *newline = strchr(dep, '\n');
+        if (newline)
+            *newline = '\0';
+
+        time_t dep_modified;
+
+        if (!last_modified(dep, &dep_modified)) {
+            printf("Error: Could not get last modified time of dependency %s\n",
+                   dep);
+
+            fclose(file);
+            free(depfile);
+            return true;
+        }
+
+        if (dep_modified > modified) {
+            fclose(file);
+            free(depfile);
+            return true;
+        }
+    }
+
+    return false;
 }
 
 // This file is part of Lute.

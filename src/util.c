@@ -120,6 +120,17 @@ bool remove_dir(const char *path) {
     return rmdir(path) == 0;
 }
 
+bool last_modified(const char *path, time_t *time) {
+    struct stat st = {0};
+
+    if (stat(path, &st) == 0) {
+        *time = st.st_mtime;
+        return true;
+    }
+
+    return false;
+}
+
 // This file is part of Lute.
 // Copyright (C) 2024  Hjalte C. Nannestad
 //

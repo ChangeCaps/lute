@@ -15,6 +15,8 @@ typedef struct {
     Profile profile;
 } BuildOptions;
 
+const char *profile_name(Profile profile);
+
 BuildOptions build_options_default();
 bool build_options_parse(BuildOptions *options, int argc, char **argv,
                          int *argi);
@@ -28,6 +30,12 @@ bool build_target(const BuildOptions *options, const BuildTarget *target,
                   Output output, const char *outdir);
 bool build_objects(const BuildOptions *options, const BuildTarget *target,
                    const char *output);
+
+// Compare the last-modified time of the object file with the last-modified
+// of the dependencies found in the .d file.
+//
+// Returns true if the object file needs to be compiled.
+bool build_should_compile_object(const char *object);
 
 // This file is part of Lute.
 // Copyright (C) 2024  Hjalte C. Nannestad
