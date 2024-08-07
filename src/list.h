@@ -5,8 +5,18 @@
 
 #include <stdbool.h>
 
+typedef enum {
+    LIST_OUTPUT_NONE = 0,
+    LIST_OUTPUT_SOURCE = 1 << 0,
+    LIST_OUTPUT_LANGUAGE = 1 << 1,
+
+    LIST_OUTPUT_DEFAULT = LIST_OUTPUT_LANGUAGE,
+    LIST_OUTPUT_ALL = LIST_OUTPUT_SOURCE | LIST_OUTPUT_LANGUAGE,
+} ListOutput;
+
 typedef struct {
     bool help;
+    ListOutput output;
 } ListOptions;
 
 ListOptions list_options_default();

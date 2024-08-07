@@ -9,7 +9,11 @@ void print_list_usage() {
     printf("Usage: lute list [options]\n"
            "\n"
            "Options:\n"
-           "  -h --help    Show this help message\n");
+           "  -h --help     Show this help message\n"
+           "     --none     Show only target names\n"
+           "     --lang     Show target language\n"
+           "     --src      Show target sources\n"
+           "     --full     Show full target information\n");
 }
 
 void print_list_help() {
@@ -21,6 +25,7 @@ ListOptions list_options_default() {
     ListOptions options = {0};
 
     options.help = false;
+    options.output = LIST_OUTPUT_DEFAULT;
 
     return options;
 }
@@ -33,6 +38,14 @@ bool list_options_parse(ListOptions *options, int argc, char **argv,
 
         if (arg_is(arg, "-h", "--help")) {
             options->help = true;
+        } else if (arg_is(arg, NULL, "--none")) {
+            options->output = LIST_OUTPUT_NONE;
+        } else if (arg_is(arg, NULL, "--lang")) {
+            options->output |= LIST_OUTPUT_LANGUAGE;
+        } else if (arg_is(arg, NULL, "--src")) {
+            options->output |= LIST_OUTPUT_SOURCE;
+        } else if (arg_is(arg, NULL, "--full")) {
+            options->output = LIST_OUTPUT_ALL;
         } else {
             printf("Unknown option: %s\n\n", arg);
             return false;
@@ -73,8 +86,36 @@ static void print_target_title(const BuildTarget *target) {
     printf("\n");
 }
 
-static void list_target(const BuildTarget *target) {
+static void list_target_language(const BuildTarget *target) {
+    printf("    Language: ");
+
+    switch (target->lang) {
+    case C:
+        printf("C");
+        break;
+    case CPP:
+        printf("C++");
+        break;
+    }
+
+    printf("\n");
+}
+
+static void list_target_sources(const BuildTarget *target) {
+    printf("    Sources:\n");
+    vec_foreach(&target->sources, source) printf("      %s\n", source);
+}
+
+static void list_target(const ListOptions *options, const BuildTarget *target) {
     print_target_title(target);
+
+    if (options->output & LIST_OUTPUT_LANGUAGE) {
+        list_target_language(target);
+    }
+
+    if (options->output & LIST_OUTPUT_SOURCE) {
+        list_target_sources(target);
+    }
 }
 
 int list_command(int argc, char **argv, int *argi) {
@@ -116,11 +157,13 @@ int list_command(int argc, char **argv, int *argi) {
     }
 
     if (target) {
-        printf("Target:\n");
-        list_target(target);
+        printf("Available Target:\n");
+        list_target(&options, target);
     } else {
         printf("Available targets:\n");
-        vec_foreachat(&graph.root->targets, target) list_target(target);
+        vec_foreachat(&graph.root->targets, target) {
+            list_target(&options, target);
+        }
     }
 
     return 0;
