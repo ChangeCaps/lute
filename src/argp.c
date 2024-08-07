@@ -12,6 +12,34 @@ bool arg_is(const char *arg, const char *short_name, const char *long_name) {
     return is_short || is_long;
 }
 
+BuildTarget *select_target(const BuildGraph *graph, int argc, char **argv,
+                           int *argi) {
+    BuildTarget *target = NULL;
+
+    if (argc > 2 && is_valid_target_name(argv[2])) {
+        vec_foreachat(&graph->root->targets, t) {
+            if (strcmp(t->name, argv[2]) == 0)
+                target = t;
+        }
+
+        (*argi)++;
+
+        if (!target) {
+            printf("Error: Target %s not found\n", argv[2]);
+            return NULL;
+        }
+    }
+
+    if (!target && graph->root->targets.len != 1) {
+        printf("Error: No target specified and no default target found\n");
+        return NULL;
+    } else if (!target) {
+        target = graph->root->targets.data;
+    }
+
+    return target;
+}
+
 // This file is part of Lute.
 // Copyright (C) 2024  Hjalte C. Nannestad
 //

@@ -10,7 +10,6 @@
 #include "argp.h"
 #include "build.h"
 #include "clean.h"
-#include "install.h"
 #include "list.h"
 #include "run.h"
 
@@ -23,7 +22,6 @@ void help_lute() {
     printf("Commands:\n");
     printf("  run, r        Build and run a target\n");
     printf("  build, b      Build a target\n");
-    printf("  install, i    Install a target\n");
     printf("  clean         Clean build artifacts\n");
     printf("  list          List available targets\n");
     printf("  help          Show this help message\n");
@@ -46,8 +44,6 @@ int main(int argc, char **argv) {
             return run_command(argc, argv, &argi);
         } else if (arg_is(arg, "b", "build")) {
             return build_command(argc, argv, &argi);
-        } else if (arg_is(arg, "i", "install")) {
-            return install_command(argc, argv, &argi);
         } else if (arg_is(arg, NULL, "clean")) {
             return clean_command(argc, argv, &argi);
         } else if (arg_is(arg, NULL, "list")) {

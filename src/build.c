@@ -85,27 +85,10 @@ int build_command(int argc, char **argv, int *argi) {
         return 1;
     }
 
-    BuildTarget *target = NULL;
+    BuildTarget *target = select_target(&graph, argc, argv, argi);
 
-    if (argc > *argi && is_valid_target_name(argv[*argi])) {
-        vec_foreachat(&graph.root->targets, t) {
-            if (strcmp(t->name, argv[*argi]) == 0)
-                target = t;
-        }
-
-        (*argi)++;
-
-        if (!target) {
-            printf("Error: Target %s not found\n", argv[2]);
-            return 1;
-        }
-    }
-
-    if (!target && graph.root->targets.len != 1) {
-        printf("Error: No target specified and no default target found\n");
+    if (!target) {
         return 1;
-    } else if (!target) {
-        target = graph.root->targets.data;
     }
 
     BuildOptions options = build_options_default();

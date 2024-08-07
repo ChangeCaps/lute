@@ -2,6 +2,7 @@
 // See end of file for license information.
 
 #include "run.h"
+#include "argp.h"
 #include "args.h"
 #include "build.h"
 #include "graph.h"
@@ -20,31 +21,9 @@ int run_command(int argc, char **argv, int *argi) {
         return 1;
     }
 
-    BuildTarget *target = NULL;
+    BuildTarget *target = select_target(&graph, argc, argv, argi);
 
-    if (argc > 2 && is_valid_target_name(argv[2])) {
-        vec_foreachat(&graph.root->targets, t) {
-            if (strcmp(t->name, argv[2]) == 0)
-                target = t;
-        }
-
-        (*argi)++;
-
-        if (!target) {
-            printf("Error: Target %s not found\n", argv[2]);
-            return 1;
-        }
-    }
-
-    if (!target && graph.root->targets.len != 1) {
-        printf("Error: No target specified and no default target found\n");
-        return 1;
-    } else if (!target) {
-        target = graph.root->targets.data;
-    }
-
-    if (!(target->output & BINARY)) {
-        printf("Error: Target %s is not a binary target\n", target->name);
+    if (!target) {
         return 1;
     }
 
