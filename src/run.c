@@ -6,6 +6,13 @@
 #include "build.h"
 #include "graph.h"
 
+void run_help_command() {
+    printf("Usage: lute run [target] [options] [-- [args]]\n");
+    printf("\n");
+    printf("Options:\n");
+    help_build_options();
+}
+
 int run_command(int argc, char **argv) {
     BuildGraph graph;
 
@@ -13,6 +20,7 @@ int run_command(int argc, char **argv) {
         return 1;
     }
 
+    int argi = 2;
     BuildTarget *target = NULL;
 
     if (argc > 2 && is_valid_target_name(argv[2])) {
@@ -20,6 +28,8 @@ int run_command(int argc, char **argv) {
             if (strcmp(t->name, argv[2]) == 0)
                 target = t;
         }
+
+        argi++;
 
         if (!target) {
             printf("Error: Target %s not found\n", argv[2]);
@@ -39,10 +49,21 @@ int run_command(int argc, char **argv) {
         return 1;
     }
 
+    BuildOptions options = build_options_default();
+
+    if (!build_options_parse(&options, argc, argv, &argi)) {
+        return 1;
+    }
+
+    if (options.help) {
+        run_help_command();
+        return 0;
+    }
+
     char outdir[256];
     snprintf(outdir, sizeof(outdir), "out/%s", target->name);
 
-    if (!build_target(target, BINARY, outdir)) {
+    if (!build_target(&options, target, BINARY, outdir)) {
         printf("Build of target %s failed, exiting\n", target->name);
         return 1;
     }

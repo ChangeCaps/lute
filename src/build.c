@@ -25,6 +25,55 @@ static const char *get_compiler(const BuildTarget *target) {
     }
 }
 
+void help_build_options() {
+    printf("  -h --help                 Show this help message\n");
+    printf("  -r --release              Build with release profile\n");
+    printf("  -d --debug (default)      Build with debug profile\n");
+}
+
+void build_help_command() {
+    printf("Usage: lute build [target] [options]\n");
+    printf("\n");
+    printf("Options:\n");
+    help_build_options();
+}
+
+BuildOptions build_options_default() {
+    BuildOptions options = {0};
+    options.help = false;
+    options.profile = DEBUG;
+    return options;
+}
+
+static bool is_arg(const char *arg, const char *short_name,
+                   const char *long_name) {
+    bool is_short = short_name && strcmp(arg, short_name) == 0;
+    bool is_long = long_name && strcmp(arg, long_name) == 0;
+
+    return is_short || is_long;
+}
+
+bool build_options_parse(BuildOptions *options, int argc, char **argv, int *i) {
+    for (; *i < argc; (*i)++) {
+        char *arg = argv[*i];
+
+        if (is_arg(arg, "-h", "--help")) {
+            options->help = true;
+        } else if (is_arg(arg, "-r", "--release")) {
+            options->profile = RELEASE;
+        } else if (is_arg(arg, "-d", "--debug")) {
+            options->profile = DEBUG;
+        } else if (strcmp(argv[*i], "--")) {
+            return true;
+        } else {
+            printf("Error: Unknown option %s\n", argv[*i]);
+            return false;
+        }
+    }
+
+    return true;
+}
+
 int build_command(int argc, char **argv) {
     BuildGraph graph;
 
@@ -32,6 +81,7 @@ int build_command(int argc, char **argv) {
         return 1;
     }
 
+    int argi = 2;
     BuildTarget *target = NULL;
 
     if (argc > 2 && is_valid_target_name(argv[2])) {
@@ -39,6 +89,8 @@ int build_command(int argc, char **argv) {
             if (strcmp(t->name, argv[2]) == 0)
                 target = t;
         }
+
+        argi++;
 
         if (!target) {
             printf("Error: Target %s not found\n", argv[2]);
@@ -53,10 +105,21 @@ int build_command(int argc, char **argv) {
         target = graph.root->targets.data;
     }
 
+    BuildOptions options = build_options_default();
+
+    if (!build_options_parse(&options, argc, argv, &argi)) {
+        return 1;
+    }
+
+    if (options.help) {
+        build_help_command();
+        return 0;
+    }
+
     char outdir[256];
     snprintf(outdir, sizeof(outdir), "out/%s", target->name);
 
-    if (!build_target(target, target->output, outdir)) {
+    if (!build_target(&options, target, target->output, outdir)) {
         printf("Build of target %s failed, exiting\n", target->name);
         return 1;
     }
@@ -64,27 +127,29 @@ int build_command(int argc, char **argv) {
     return 0;
 }
 
-int build_help_command(BuildGraph *build, int argc, char **argv) {
-    (void)build;
-    (void)argc;
-    (void)argv;
+bool build_target(const BuildOptions *options, const BuildTarget *target,
+                  Output output, const char *outdir) {
+    printf("Building target %s", target->name);
 
-    printf("Usage: lute build [target]\n");
-    return 0;
-}
-
-bool build_target(const BuildTarget *target, Output output,
-                  const char *outdir) {
+    switch (options->profile) {
+    case DEBUG:
+        printf("[debug]\n");
+        break;
+    case RELEASE:
+        printf("[release]\n");
+        break;
+    }
 
     vec_foreach(&target->deps, dep) {
         char depoutdir[256];
         snprintf(depoutdir, sizeof(depoutdir), "out/deps/%s", dep->id);
 
-        if (!build_target(dep->node->targets.data, STATIC | BINARY, depoutdir))
+        if (!build_target(options, dep->node->targets.data, STATIC | BINARY,
+                          depoutdir))
             return false;
     }
 
-    if (!build_objects(target, outdir))
+    if (!build_objects(options, target, outdir))
         return false;
 
     const char *compiler = get_compiler(target);
@@ -122,7 +187,16 @@ bool build_target(const BuildTarget *target, Output output,
         args_push(&args, "-o");
         args_push(&args, binpath);
         args_push(&args, "-g");
-        args_push(&args, "-O0");
+
+        switch (options->profile) {
+        case DEBUG:
+            args_push(&args, "-g");
+            args_push(&args, "-O1");
+            break;
+        case RELEASE:
+            args_push(&args, "-O3");
+            break;
+        }
 
         if (target->std) {
             char std[256];
@@ -168,8 +242,6 @@ bool build_target(const BuildTarget *target, Output output,
         args_push(&args, "rcs");
         args_push(&args, libpath);
         args_push(&args, objs);
-        args_push(&args, "-g");
-        args_push(&args, "-O0");
 
         vec_foreach(&target->packages, package) {
             args_push(&args, package->libs);
@@ -208,8 +280,16 @@ bool build_target(const BuildTarget *target, Output output,
         args_push(&args, objs);
         args_push(&args, "-o");
         args_push(&args, libpath);
-        args_push(&args, "-g");
-        args_push(&args, "-O0");
+
+        switch (options->profile) {
+        case DEBUG:
+            args_push(&args, "-g");
+            args_push(&args, "-O1");
+            break;
+        case RELEASE:
+            args_push(&args, "-O3");
+            break;
+        }
 
         if (target->std) {
             char std[256];
@@ -255,7 +335,8 @@ static void push_includes(Args *args, const BuildTarget *target) {
     vec_foreach(&target->deps, dep) push_includes(args, dep->target);
 }
 
-bool build_objects(const BuildTarget *target, const char *outdir) {
+bool build_objects(const BuildOptions *options, const BuildTarget *target,
+                   const char *outdir) {
     if (!make_dirs(outdir)) {
         printf("Error: Could not create output directory\n");
 
@@ -285,8 +366,16 @@ bool build_objects(const BuildTarget *target, const char *outdir) {
         args_push(&args, source);
         args_push(&args, "-o");
         args_push(&args, object);
-        args_push(&args, "-g");
-        args_push(&args, "-O0");
+
+        switch (options->profile) {
+        case DEBUG:
+            args_push(&args, "-g");
+            args_push(&args, "-O1");
+            break;
+        case RELEASE:
+            args_push(&args, "-O3");
+            break;
+        }
 
         if (target->std) {
             char std[256];
