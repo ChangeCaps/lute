@@ -3,7 +3,7 @@
 
 #pragma once
 
-int list_command(int argc, char **argv);
+int list_command(int argc, char **argv, int *argi);
 
 // This file is part of Lute.
 // Copyright (C) 2024  Hjalte C. Nannestad

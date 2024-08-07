@@ -6,9 +6,10 @@
 #include "clean.h"
 #include "util.h"
 
-int clean_command(int argc, char **argv) {
+int clean_command(int argc, char **argv, int *argi) {
     (void)argc;
     (void)argv;
+    (void)argi;
 
     printf("Cleaning...\n");
 

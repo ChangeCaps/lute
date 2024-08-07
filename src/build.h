@@ -17,9 +17,9 @@ typedef struct {
 
 BuildOptions build_options_default();
 bool build_options_parse(BuildOptions *options, int argc, char **argv,
-                         int *index);
+                         int *argi);
 
-int build_command(int argc, char **argv);
+int build_command(int argc, char **argv, int *argi);
 
 void build_help_command();
 void help_build_options();

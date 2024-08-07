@@ -13,14 +13,13 @@ void run_help_command() {
     help_build_options();
 }
 
-int run_command(int argc, char **argv) {
+int run_command(int argc, char **argv, int *argi) {
     BuildGraph graph;
 
     if (!build_graph_load(&graph)) {
         return 1;
     }
 
-    int argi = 2;
     BuildTarget *target = NULL;
 
     if (argc > 2 && is_valid_target_name(argv[2])) {
@@ -29,7 +28,7 @@ int run_command(int argc, char **argv) {
                 target = t;
         }
 
-        argi++;
+        (*argi)++;
 
         if (!target) {
             printf("Error: Target %s not found\n", argv[2]);
@@ -51,7 +50,7 @@ int run_command(int argc, char **argv) {
 
     BuildOptions options = build_options_default();
 
-    if (!build_options_parse(&options, argc, argv, &argi)) {
+    if (!build_options_parse(&options, argc, argv, argi)) {
         return 1;
     }
 
@@ -73,16 +72,6 @@ int run_command(int argc, char **argv) {
 
     Args args = args_new();
     args_push(&args, cmd);
-
-    bool found = false;
-    for (int i = 2; i < argc; i++) {
-        if (strcmp(argv[i], "--") == 0) {
-            found = true;
-            continue;
-        } else if (found) {
-            args_push(&args, argv[i]);
-        }
-    }
 
     int status = args_exec(&args);
     args_free(&args);

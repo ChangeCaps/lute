@@ -4,9 +4,10 @@
 #include "list.h"
 #include "graph.h"
 
-int list_command(int argc, char **argv) {
+int list_command(int argc, char **argv, int *argi) {
     (void)argc;
     (void)argv;
+    (void)argi;
 
     BuildGraph graph;
 

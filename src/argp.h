@@ -3,7 +3,9 @@
 
 #pragma once
 
-int install_command(int argc, char **argv, int *argi);
+#include <stdbool.h>
+
+bool arg_is(const char *arg, const char *short_name, const char *long_name);
 
 // This file is part of Lute.
 // Copyright (C) 2024  Hjalte C. Nannestad

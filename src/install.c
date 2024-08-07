@@ -5,9 +5,10 @@
 
 #include "install.h"
 
-int install_command(int argc, char **argv) {
+int install_command(int argc, char **argv, int *argi) {
     (void)argc;
     (void)argv;
+    (void)argi;
 
     printf("Installing...\n");
 

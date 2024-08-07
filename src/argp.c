@@ -1,9 +1,16 @@
 // Copyright (C) 2024  Hjalte C. Nannestad
 // See end of file for license information.
 
-#pragma once
+#include <string.h>
 
-int install_command(int argc, char **argv, int *argi);
+#include "argp.h"
+
+bool arg_is(const char *arg, const char *short_name, const char *long_name) {
+    bool is_short = short_name && strcmp(arg, short_name) == 0;
+    bool is_long = long_name && strcmp(arg, long_name) == 0;
+
+    return is_short || is_long;
+}
 
 // This file is part of Lute.
 // Copyright (C) 2024  Hjalte C. Nannestad

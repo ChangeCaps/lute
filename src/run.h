@@ -4,7 +4,7 @@
 #pragma once
 
 void run_help_command();
-int run_command(int argc, char **argv);
+int run_command(int argc, char **argv, int *argi);
 
 // This file is part of Lute.
 // Copyright (C) 2024  Hjalte C. Nannestad

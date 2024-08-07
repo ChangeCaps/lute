@@ -4,6 +4,7 @@
 #include <lute/target.h>
 #include <stdio.h>
 
+#include "argp.h"
 #include "args.h"
 #include "build.h"
 #include "util.h"
@@ -45,28 +46,22 @@ BuildOptions build_options_default() {
     return options;
 }
 
-static bool is_arg(const char *arg, const char *short_name,
-                   const char *long_name) {
-    bool is_short = short_name && strcmp(arg, short_name) == 0;
-    bool is_long = long_name && strcmp(arg, long_name) == 0;
+bool build_options_parse(BuildOptions *options, int argc, char **argv,
+                         int *argi) {
 
-    return is_short || is_long;
-}
+    while (*argi < argc) {
+        char *arg = argv[(*argi)++];
 
-bool build_options_parse(BuildOptions *options, int argc, char **argv, int *i) {
-    for (; *i < argc; (*i)++) {
-        char *arg = argv[*i];
-
-        if (is_arg(arg, "-h", "--help")) {
+        if (arg_is(arg, "-h", "--help")) {
             options->help = true;
-        } else if (is_arg(arg, "-r", "--release")) {
+        } else if (arg_is(arg, "-r", "--release")) {
             options->profile = RELEASE;
-        } else if (is_arg(arg, "-d", "--debug")) {
+        } else if (arg_is(arg, "-d", "--debug")) {
             options->profile = DEBUG;
-        } else if (strcmp(argv[*i], "--")) {
-            return true;
+        } else if (arg_is(arg, "--", NULL)) {
+            break;
         } else {
-            printf("Error: Unknown option %s\n", argv[*i]);
+            printf("Error: Unknown option %s\n", arg);
             return false;
         }
     }
@@ -74,23 +69,22 @@ bool build_options_parse(BuildOptions *options, int argc, char **argv, int *i) {
     return true;
 }
 
-int build_command(int argc, char **argv) {
+int build_command(int argc, char **argv, int *argi) {
     BuildGraph graph;
 
     if (!build_graph_load(&graph)) {
         return 1;
     }
 
-    int argi = 2;
     BuildTarget *target = NULL;
 
-    if (argc > 2 && is_valid_target_name(argv[2])) {
+    if (argc > *argi && is_valid_target_name(argv[*argi])) {
         vec_foreachat(&graph.root->targets, t) {
-            if (strcmp(t->name, argv[2]) == 0)
+            if (strcmp(t->name, argv[*argi]) == 0)
                 target = t;
         }
 
-        argi++;
+        (*argi)++;
 
         if (!target) {
             printf("Error: Target %s not found\n", argv[2]);
@@ -107,7 +101,7 @@ int build_command(int argc, char **argv) {
 
     BuildOptions options = build_options_default();
 
-    if (!build_options_parse(&options, argc, argv, &argi)) {
+    if (!build_options_parse(&options, argc, argv, argi)) {
         return 1;
     }
 

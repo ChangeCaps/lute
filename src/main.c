@@ -7,6 +7,7 @@
 
 #include <lute/lute.h>
 
+#include "argp.h"
 #include "build.h"
 #include "clean.h"
 #include "install.h"
@@ -14,37 +15,49 @@
 #include "run.h"
 
 void help_lute() {
-    printf("Usage: lute [command]\n");
+    printf("Usage: lute [options] [command]\n");
+    printf("\n");
+    printf("Options:\n");
+    printf("  -h, --help    Show this help message\n");
     printf("\n");
     printf("Commands:\n");
-    printf("  run\n");
-    printf("  build\n");
-    printf("  install\n");
-    printf("  clean\n");
-    printf("  list\n");
-    printf("  help\n");
+    printf("  run, r        Build and run a target\n");
+    printf("  build, b      Build a target\n");
+    printf("  install, i    Install a target\n");
+    printf("  clean         Clean build artifacts\n");
+    printf("  list          List available targets\n");
+    printf("  help          Show this help message\n");
 }
 
 int main(int argc, char **argv) {
     if (argc < 2) {
         help_lute();
+        printf("\n");
+        printf("Error: No command specified\n");
         return 1;
     }
-    if (strcmp(argv[1], "run") == 0) {
-        return run_command(argc, argv);
-    } else if (strcmp(argv[1], "build") == 0) {
-        return build_command(argc, argv);
-    } else if (strcmp(argv[1], "install") == 0) {
-        return install_command(argc, argv);
-    } else if (strcmp(argv[1], "clean") == 0) {
-        return clean_command(argc, argv);
-    } else if (strcmp(argv[1], "list") == 0) {
-        return list_command(argc, argv);
-    } else if (strcmp(argv[1], "help") == 0) {
-        help_lute();
-    } else {
-        printf("Unknown command: %s\n", argv[1]);
-        help_lute();
+
+    int argi = 1;
+
+    while (argi < argc) {
+        char *arg = argv[argi++];
+
+        if (arg_is(arg, "r", "run")) {
+            return run_command(argc, argv, &argi);
+        } else if (arg_is(arg, "b", "build")) {
+            return build_command(argc, argv, &argi);
+        } else if (arg_is(arg, "i", "install")) {
+            return install_command(argc, argv, &argi);
+        } else if (arg_is(arg, NULL, "clean")) {
+            return clean_command(argc, argv, &argi);
+        } else if (arg_is(arg, NULL, "list")) {
+            return list_command(argc, argv, &argi);
+        } else if (arg_is(arg, NULL, "help") || arg_is(arg, "-h", "--help")) {
+            help_lute();
+        } else {
+            printf("Unknown argument: %s\n", arg);
+            help_lute();
+        }
     }
 
     return 0;
