@@ -346,16 +346,15 @@ bool install_pkg_config(const InstallOptions *options,
     fprintf(file, "Description: A library for %s\n", target->name);
     fprintf(file, "Version: 0.1.0\n");
     fprintf(file, "Libs: -L${libdir} -l%s\n", target->name);
-    fprintf(file, "Cflags: \n");
+    fprintf(file, "Cflags: ");
 
     vec_foreach(&target->includes, include) {
-        fprintf(file, "-I${includedir}/%s\n", include);
+        fprintf(file, "-I${includedir}/%s", include);
     }
 
-    if (!fclose(file)) {
-        printf("Failed to close file %s\n", outpath);
-        return false;
-    }
+    fprintf(file, "\n");
+
+    fclose(file);
 
     return true;
 }
