@@ -190,6 +190,10 @@ int install_command(int argc, char **argv, int *argi) {
         install_headers(&options, target, outdir);
     }
 
+    if (target->output & (STATIC | SHARED | HEADER)) {
+        install_pkg_config(&options, target, outdir);
+    }
+
     return 0;
 }
 
