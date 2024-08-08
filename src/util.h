@@ -12,7 +12,7 @@ bool make_dir(const char *path);
 bool make_dirs(const char *path);
 bool read_file(const char *path, char **data);
 bool copy_file(const char *src, const char *dst);
-bool copy_dir(const char *src, const char *dst);
+bool copy_files(const char *src, const char *dst);
 bool remove_dir(const char *path);
 bool last_modified(const char *path, time_t *time);
 

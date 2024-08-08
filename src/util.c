@@ -89,9 +89,9 @@ bool copy_file(const char *src, const char *dst) {
     return system(cmd) == 0;
 }
 
-bool copy_dir(const char *src, const char *dst) {
+bool copy_files(const char *src, const char *dst) {
     char cmd[512];
-    sprintf(cmd, "cp -r %s %s", src, dst);
+    sprintf(cmd, "cp -r %s/* %s", src, dst);
     return system(cmd) == 0;
 }
 

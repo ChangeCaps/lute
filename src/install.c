@@ -120,7 +120,7 @@ static bool set_nix_paths(InstallOptions *options, const BuildTarget *target) {
         snprintf(incpath, 256, "%s/include", dev);
 
         char *pkgpath = malloc(256);
-        snprintf(pkgpath, 256, "%s/pkgconfig", dev);
+        snprintf(pkgpath, 256, "%s/lib/pkgconfig", dev);
 
         options->include_path = incpath;
         options->pkg_config_path = pkgpath;
@@ -277,6 +277,7 @@ bool install_shared(const InstallOptions *options, const BuildTarget *target,
 
 bool install_headers(const InstallOptions *options, const BuildTarget *target,
                      const char *outdir) {
+    (void)outdir;
 
     if (!make_dirs(options->include_path)) {
         printf("Failed to create directory %s\n", options->include_path);
@@ -287,26 +288,16 @@ bool install_headers(const InstallOptions *options, const BuildTarget *target,
     snprintf(incpath, sizeof(incpath), "%s/%s", options->include_path,
              target->name);
 
+    if (!make_dirs(incpath)) {
+        printf("Failed to create directory %s\n", incpath);
+        return false;
+    }
+
     printf("Installing headers to %s\n", incpath);
 
     if (!options->dry) {
-        vec_foreach(&target->sources, source) {
-            char srcpath[256];
-            snprintf(srcpath, sizeof(srcpath), "%s/%s", outdir, source);
-
-            if (!is_dir(srcpath)) {
-                continue;
-            }
-
-            char dstpath[256];
-            snprintf(dstpath, sizeof(dstpath), "%s/%s", incpath, source);
-
-            if (!make_dirs(dstpath)) {
-                printf("Failed to create directory %s\n", dstpath);
-                return false;
-            }
-
-            if (!copy_dir(srcpath, dstpath)) {
+        vec_foreach(&target->includes, include) {
+            if (!copy_files(include, incpath)) {
                 return false;
             }
         }
@@ -328,6 +319,10 @@ bool install_pkg_config(const InstallOptions *options,
     snprintf(outpath, sizeof(outpath), "%s/%s.pc", options->pkg_config_path,
              target->name);
 
+    char incpath[256];
+    snprintf(incpath, sizeof(incpath), "%s/%s", options->include_path,
+             target->name);
+
     printf("Installing pkg-config file to %s\n", outpath);
 
     FILE *file = fopen(outpath, "w");
@@ -337,22 +332,17 @@ bool install_pkg_config(const InstallOptions *options,
         return false;
     }
 
-    fprintf(file, "prefix=%s\n", options->bin_path);
-    fprintf(file, "exec_prefix=${prefix}\n");
-    fprintf(file, "libdir=%s\n", options->lib_path);
-    fprintf(file, "includedir=%s\n", options->include_path);
-    fprintf(file, "\n");
     fprintf(file, "Name: %s\n", target->name);
     fprintf(file, "Description: A library for %s\n", target->name);
     fprintf(file, "Version: 0.1.0\n");
-    fprintf(file, "Libs: -L${libdir} -l%s\n", target->name);
-    fprintf(file, "Cflags: ");
 
-    vec_foreach(&target->includes, include) {
-        fprintf(file, "-I${includedir}/%s", include);
+    if (target->output & (STATIC | SHARED)) {
+        fprintf(file, "Libs: -L%s -l%s\n", options->lib_path, target->name);
+    } else {
+        fprintf(file, "Libs:\n");
     }
 
-    fprintf(file, "\n");
+    fprintf(file, "Cflags: -I%s\n", incpath);
 
     fclose(file);
 
