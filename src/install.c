@@ -348,8 +348,8 @@ bool install_pkg_config(const InstallOptions *options,
     fprintf(file, "Libs: -L${libdir} -l%s\n", target->name);
     fprintf(file, "Cflags: \n");
 
-    vec_foreach(&target->sources, source) {
-        fprintf(file, "-I${includedir}/%s\n", source);
+    vec_foreach(&target->includes, include) {
+        fprintf(file, "-I${includedir}/%s\n", include);
     }
 
     if (!fclose(file)) {
