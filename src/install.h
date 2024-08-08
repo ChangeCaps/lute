@@ -11,6 +11,7 @@ typedef struct {
     bool help;
     bool dry;
     bool build;
+    bool nix;
     const char *bin_path;
     const char *lib_path;
     const char *include_path;

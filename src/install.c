@@ -22,7 +22,8 @@ void print_install_usage() {
            "      --pkg-config-path     Set the pkg-config installation path\n"
            "\n"
            "Platform-specific options:\n"
-           "      --nix                 Install on a NixOS system\n");
+           "      --nix                 Install on a NixOS system"
+           ", use this in the installPhase of a derivation\n");
 }
 
 void print_install_help() {
@@ -34,7 +35,9 @@ InstallOptions install_options_default() {
     InstallOptions options = {0};
 
     options.help = false;
+    options.dry = false;
     options.build = true;
+    options.nix = false;
     options.bin_path = "/usr/local/bin";
     options.lib_path = "/usr/local/lib";
     options.include_path = "/usr/local/include";
@@ -64,41 +67,56 @@ bool install_options_parse(InstallOptions *options, int argc, char **argv,
         } else if (arg_is(arg, NULL, "--pkg-config-path")) {
             options->pkg_config_path = argv[(*argi)++];
         } else if (arg_is(arg, NULL, "--nix")) {
-            char *out = getenv("out");
-            char *lib = getenv("lib");
-            char *dev = getenv("dev");
-
-            if (!out || !lib || !dev) {
-                printf("Nix environment variables not set\n");
-                printf("Make sure you are running this command in a Nix "
-                       "stdenv derivation\n");
-                return false;
-            }
-
-            // yes, this is a memory leak
-            // no, I don't care
-            char *bin_path = malloc(strlen(out) + strlen("/bin") + 1);
-            char *include_path = malloc(strlen(dev) + strlen("/include") + 1);
-            char *pkg_config_path =
-                malloc(strlen(dev) + strlen("/lib/pkgconfig") + 1);
-
-            strcpy(bin_path, out);
-            strcat(bin_path, "/bin");
-
-            strcpy(include_path, dev);
-            strcat(include_path, "/include");
-
-            strcpy(pkg_config_path, dev);
-            strcat(pkg_config_path, "/lib/pkgconfig");
-
-            options->bin_path = bin_path;
-            options->lib_path = lib;
-            options->include_path = include_path;
-            options->pkg_config_path = pkg_config_path;
+            options->nix = true;
         } else {
             printf("Unknown option: %s\n", arg);
             return false;
         }
+    }
+
+    return true;
+}
+
+static bool set_nix_paths(InstallOptions *options, const BuildTarget *target) {
+    char *out = getenv("out");
+    char *lib = getenv("lib");
+    char *dev = getenv("dev");
+
+    if (target->output & BINARY) {
+        if (!out) {
+            printf("Nix environment variable 'out' not set\n");
+            return false;
+        }
+
+        char *binpath = malloc(256);
+        snprintf(binpath, 256, "%s/bin", out);
+
+        options->bin_path = binpath;
+    }
+
+    if (target->output & (STATIC | SHARED)) {
+        if (!lib) {
+            printf("Nix environment variable 'lib' not set\n");
+            return false;
+        }
+
+        options->lib_path = lib;
+    }
+
+    if (target->output & (STATIC | SHARED | HEADER)) {
+        if (!dev) {
+            printf("Nix environment variable 'dev' not set\n");
+            return false;
+        }
+
+        char *incpath = malloc(256);
+        snprintf(incpath, 256, "%s/include", dev);
+
+        char *pkgpath = malloc(256);
+        snprintf(pkgpath, 256, "%s/pkgconfig", dev);
+
+        options->include_path = incpath;
+        options->pkg_config_path = pkgpath;
     }
 
     return true;
@@ -141,6 +159,10 @@ int install_command(int argc, char **argv, int *argi) {
         if (!build_target(&build_options, target, target->output, outdir)) {
             return 1;
         }
+    }
+
+    if (options.nix && !set_nix_paths(&options, target)) {
+        return 1;
     }
 
     printf("Installing target %s\n", target->name);
