@@ -82,6 +82,13 @@ static bool set_nix_paths(InstallOptions *options, const BuildTarget *target) {
     char *lib = getenv("lib");
     char *dev = getenv("dev");
 
+    if (out)
+        make_dirs(out);
+    if (lib)
+        make_dirs(lib);
+    if (dev)
+        make_dirs(dev);
+
     if (target->output & BINARY) {
         if (!out) {
             printf("Nix environment variable 'out' not set\n");
