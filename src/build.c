@@ -235,7 +235,7 @@ bool build_target(const BuildOptions *options, const BuildTarget *target,
 
         Args args = args_new();
 
-        args_push(&args, "ar");
+        args_push(&args, getenv("AR") ? getenv("AR") : "ar");
         args_push(&args, "rcs");
         args_push(&args, libpath);
         args_push(&args, objs);
