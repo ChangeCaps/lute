@@ -63,6 +63,39 @@ bool deserialize_deps(Deps *deps, FILE *file) {
     return true;
 }
 
+const char *standard_name(Standard std) {
+    switch (std) {
+    case C89:
+        return "c89";
+    case C99:
+        return "c99";
+    case C11:
+        return "c11";
+    case C17:
+        return "c17";
+    case C23:
+        return "c23";
+    case CXX98:
+        return "c++98";
+    case CXX03:
+        return "c++03";
+    case CXX11:
+        return "c++11";
+    case CXX14:
+        return "c++14";
+    case CXX17:
+        return "c++17";
+    case CXX20:
+        return "c++20";
+    case CXX23:
+        return "c++23";
+    case CXX26:
+        return "c++26";
+    default:
+        return NULL;
+    }
+}
+
 static bool is_alphabetic(char c) {
     return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
 }
@@ -95,9 +128,9 @@ bool target_init(Target *target, const char *name, Output kind) {
 
     target->name = strdup(name);
     target->output = kind;
-    target->warn = 0;
+    target->warn = Wall | Wextra;
     target->lang = C;
-    target->std = NULL;
+    target->std = 0;
 
     vec_init(&target->sources);
     vec_init(&target->includes);
@@ -126,7 +159,7 @@ void serialize_target(const Target *target, FILE *file) {
     serialize_data(&target->output, file);
     serialize_data(&target->warn, file);
     serialize_data(&target->lang, file);
-    serialize_str(target->std, file);
+    serialize_data(&target->std, file);
 
     serialize_data(&target->sources.len, file);
     vec_foreach(&target->sources, source) serialize_str(source, file);
@@ -166,7 +199,7 @@ bool deserialize_target(Target *target, FILE *file) {
                    deserialize_data(&target->output, file) &&
                    deserialize_data(&target->warn, file) &&
                    deserialize_data(&target->lang, file) &&
-                   deserialize_str(&target->std, file) &&
+                   deserialize_data(&target->std, file) &&
                    deserialize_strings(&target->sources, file) &&
                    deserialize_strings(&target->includes, file) &&
                    deserialize_strings(&target->packages, file) &&
@@ -177,6 +210,11 @@ bool deserialize_target(Target *target, FILE *file) {
     }
 
     return success;
+}
+
+void targets_free(Targets *targets) {
+    vec_foreach(targets, target) target_free(target);
+    vec_free(targets);
 }
 
 void serialize_targets(const Targets *targets, FILE *file) {
@@ -195,7 +233,7 @@ bool deserialize_targets(Targets *targets, FILE *file) {
     for (size_t i = 0; i < len; i++) {
         Target *target = malloc(sizeof(Target));
         if (!deserialize_target(target, file)) {
-            free(target);
+            targets_free(targets);
             return false;
         }
 

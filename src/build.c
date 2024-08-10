@@ -19,7 +19,7 @@ static const char *get_compiler(const BuildTarget *target) {
     switch (target->lang) {
     case C:
         return cc;
-    case CPP:
+    case CXX:
         return cxx;
     default:
         return NULL;
@@ -195,7 +195,7 @@ bool build_target(const BuildOptions *options, const BuildTarget *target,
 
         if (target->std) {
             char std[256];
-            snprintf(std, sizeof(std), "-std=%s", target->std);
+            snprintf(std, sizeof(std), "-std=%s", standard_name(target->std));
             args_push(&args, std);
         }
 
@@ -289,7 +289,7 @@ bool build_target(const BuildOptions *options, const BuildTarget *target,
 
         if (target->std) {
             char std[256];
-            snprintf(std, sizeof(std), "-std=%s", target->std);
+            snprintf(std, sizeof(std), "-std=%s", standard_name(target->std));
             args_push(&args, std);
         }
 
@@ -380,7 +380,7 @@ bool build_objects(const BuildOptions *options, const BuildTarget *target,
 
         if (target->std) {
             char std[256];
-            snprintf(std, sizeof(std), "-std=%s", target->std);
+            snprintf(std, sizeof(std), "-std=%s", standard_name(target->std));
             args_push(&args, std);
         }
 

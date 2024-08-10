@@ -5,7 +5,12 @@
 
 Target *target(Build *b, const char *name, Output kind) {
     Target target;
+
     target_init(&target, name, kind);
+    target.lang = b->lang;
+    target.warn = b->warn;
+    target.std = b->std;
+
     return build_push_target(b, target);
 }
 

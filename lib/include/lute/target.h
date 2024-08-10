@@ -22,9 +22,6 @@ typedef enum Output {
     // A header-only library target.
     HEADER = 1 << 3,
 
-    // A test target.
-    TEST = 1 << 4,
-
     LIBRARY = STATIC | SHARED,
 } Output;
 
@@ -38,15 +35,65 @@ typedef enum WarnFlag {
 
     // Enable warnings as errors.
     Werror = 1 << 2,
-} WarnFlag;
+} WarnFlags;
 
 // Languages of a target.
 typedef enum Language {
     // The C language.
     C = 0,
     // The C++ language.
-    CPP = 1,
+    CXX = 1,
 } Language;
+
+// Standard versions.
+typedef enum Standard {
+    // The C89 standard.
+    C89 = 1,
+
+    // The C90 standard.
+    C90 = 2,
+
+    // The C95 standard.
+    C95 = 3,
+
+    // The C99 standard.
+    C99 = 4,
+
+    // The C11 standard.
+    C11 = 5,
+
+    // The C17 standard.
+    C17 = 6,
+
+    // The C23 standard.
+    C23 = 7,
+
+    // The C++98 standard.
+    CXX98 = 1024,
+
+    // The C++03 standard.
+    CXX03 = 1025,
+
+    // The C++11 standard.
+    CXX11 = 1026,
+
+    // The C++14 standard.
+    CXX14 = 1027,
+
+    // The C++17 standard.
+    CXX17 = 1028,
+
+    // The C++20 standard.
+    CXX20 = 1029,
+
+    // The C++23 standard.
+    CXX23 = 1030,
+
+    // The C++26 standard.
+    CXX26 = 1031,
+} Standard;
+
+const char *standard_name(Standard std);
 
 // A dependency.
 typedef struct Dep {
@@ -94,17 +141,17 @@ typedef struct Target {
     // The warning flags to use.
     //
     // Example `Wall | Wextra`.
-    WarnFlag warn;
+    WarnFlags warn;
 
     // The language of the target.
     //
-    // Can be either `C` or `CPP`.
+    // Can be either `C` or `CXX`.
     Language lang;
 
     // The standard to use.
     //
-    // Example `c11` or `c++17`.
-    char *std;
+    // Example `C11` or `CXX17`.
+    Standard std;
 
     // The sources of the target.
     //
@@ -136,6 +183,8 @@ void target_free(Target *target);
 
 void serialize_target(const Target *target, FILE *file);
 bool deserialize_target(Target *target, FILE *file);
+
+void targets_free(Targets *targets);
 
 void serialize_targets(const Targets *targets, FILE *file);
 bool deserialize_targets(Targets *targets, FILE *file);

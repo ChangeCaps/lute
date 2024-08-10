@@ -10,6 +10,9 @@
 
 void build_init(Build *build) {
     // initialize the build
+    build->lang = C;
+    build->warn = Wall | Wextra;
+    build->std = 0;
 
     vec_init(&build->targets);
 }
@@ -31,8 +34,7 @@ Target *build_push_target(Build *build, Target target) {
 }
 
 void serialize_build(const Build *build, FILE *file) {
-    serialize_data(&build->targets.len, file);
-    vec_foreach(&build->targets, target) serialize_target(target, file);
+    serialize_targets(&build->targets, file);
 }
 
 bool deserialize_build(Build *build, FILE *file) {

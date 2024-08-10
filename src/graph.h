@@ -23,9 +23,9 @@ typedef struct BuildDep BuildDep;
 typedef struct BuildTarget {
     char *name;
     Output output;
-    WarnFlag warn;
+    WarnFlags warn;
     Language lang;
-    char *std;
+    Standard std;
 
     Paths sources;
     Paths includes;

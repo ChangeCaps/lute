@@ -7,6 +7,21 @@
 
 // The primary data structure of Lute.
 typedef struct Build {
+    // The language of the build.
+    //
+    // This will be used as the default language for added targets.
+    Language lang;
+
+    // The warning flags of the build.
+    //
+    // This will be used as the default warning flags for added targets.
+    WarnFlags warn;
+
+    // The standard of the build.
+    //
+    // This will be used as the default standard for added targets.
+    Standard std;
+
     // The targets of the build.
     Targets targets;
 } Build;

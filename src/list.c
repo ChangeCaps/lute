@@ -93,7 +93,7 @@ static void list_target_language(const BuildTarget *target) {
     case C:
         printf("C");
         break;
-    case CPP:
+    case CXX:
         printf("C++");
         break;
     }
