@@ -19,6 +19,7 @@ void print_lute_usage() {
            "\n"
            "Options:\n"
            "  -h, --help        Show this help message\n"
+           "  -v, --version     Show version information\n"
            "\n"
            "Commands:\n"
            "  run, r            Build and run a target\n"
@@ -26,11 +27,13 @@ void print_lute_usage() {
            "  install           Install a target\n"
            "  clean             Clean build artifacts\n"
            "  list              List available targets\n"
-           "  help              Show this help message\n");
+           "  help              Show this help message\n"
+           "  version           Show version information\n");
 }
 
 void print_lute_help() {
-    printf("Lute - A simple build system for C/C++ projects\n\n");
+    printf("Lute - A simple build system for C/C++ projects\n");
+    printf("Version: %s\n\n", VERSION);
     print_lute_usage();
 }
 
@@ -57,6 +60,10 @@ int main(int argc, char **argv) {
             return list_command(argc, argv, &argi);
         } else if (arg_is(arg, NULL, "help") || arg_is(arg, "-h", "--help")) {
             print_lute_help();
+            return 0;
+        } else if (arg_is(arg, NULL, "version") ||
+                   arg_is(arg, "-v", "--version")) {
+            printf("%s", VERSION);
             return 0;
         } else {
             printf("Unknown argument: %s\n\n", arg);

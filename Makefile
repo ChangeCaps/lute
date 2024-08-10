@@ -1,5 +1,7 @@
+VERSION = 0.1.0-dev
+
 CC = clang
-CCFLAGS = -Ilib/include -Wall -Wextra -g
+CCFLAGS = -Ilib/include -Wall -Wextra -g -DVERSION=\"$(VERSION)\"
 
 LIB_SOURCES = $(wildcard lib/src/*.c)
 LIB_OBJECTS = $(LIB_SOURCES:lib/src/%.c=out/lib/%.o)

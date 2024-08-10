@@ -17,7 +17,8 @@ void print_list_usage() {
 }
 
 void print_list_help() {
-    printf("List available targets\n\n");
+    printf("List available targets\n");
+    printf("Version: %s\n\n", VERSION);
     print_list_usage();
 }
 

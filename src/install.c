@@ -27,7 +27,8 @@ void print_install_usage() {
 }
 
 void print_install_help() {
-    printf("Install a target\n\n");
+    printf("Install a target\n");
+    printf("Version: %s\n\n", VERSION);
     print_install_usage();
 }
 

@@ -15,7 +15,8 @@ void print_clean_usage() {
 }
 
 void print_clean_help() {
-    printf("Clean build artifacts\n\n");
+    printf("Clean build artifacts\n");
+    printf("Version: %s\n\n", VERSION);
     print_clean_usage();
 }
 

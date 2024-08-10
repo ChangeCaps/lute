@@ -40,7 +40,8 @@ void print_build_usage() {
 }
 
 void print_build_help() {
-    printf("Build a target\n\n");
+    printf("Build a target\n");
+    printf("Version: %s\n\n", VERSION);
     print_build_usage();
 }
 

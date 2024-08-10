@@ -15,7 +15,8 @@ void print_run_usage() {
 }
 
 void print_run_help() {
-    printf("Build and run a target\n\n");
+    printf("Build and run a target\n");
+    printf("Version: %s\n\n", VERSION);
     print_run_usage();
 }
 
