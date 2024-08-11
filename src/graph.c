@@ -153,14 +153,25 @@ void build_graph_free(BuildGraph *graph) {
 static char *build_add_path(BuildGraph *graph, const char *path) {
     char *real = realpath(path, NULL);
 
-    vec_foreach(&graph->paths, p) if (strcmp(p, real) == 0) return p;
+    if (!real) {
+        printf("Error: Could not find path %s\n", path);
+        return NULL;
+    }
 
+    vec_foreach(&graph->paths, p) if (strcmp(p, real) == 0) return p;
     vec_push(&graph->paths, real);
+
     return real;
 }
 
 static bool build_add_source(BuildGraph *graph, const char *path,
                              Paths *paths) {
+
+    if (!file_exists(path)) {
+        printf("Error: Could not find source %s\n", path);
+        return false;
+    }
+
     if (!is_dir(path)) {
         char *ext = strrchr(path, '.');
 

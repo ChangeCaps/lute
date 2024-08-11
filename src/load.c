@@ -107,7 +107,7 @@ bool load_build(Build *build, const char *bpath, const char *opath) {
     }
 
     if (!deserialize_build(build, pipe)) {
-        printf("Error: Could not deserialize build\n");
+        printf("Error: Could not load build file\n");
 
         return false;
     }

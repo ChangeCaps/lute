@@ -16,6 +16,12 @@ Target *target(Build *b, const char *name, Output kind) {
 
 void source(Target *t, const char *path) {
     char *source = realpath(path, NULL);
+
+    if (!source) {
+        fprintf(stderr, "Error: Could not find source file %s\n", path);
+        exit(1);
+    }
+
     vec_push(&t->sources, source);
 }
 
