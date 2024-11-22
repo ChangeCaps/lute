@@ -12,6 +12,7 @@ typedef enum {
 
 typedef struct {
     bool help;
+    bool verbose;
     Profile profile;
 } BuildOptions;
 

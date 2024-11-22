@@ -28,6 +28,7 @@ static const char *get_compiler(const BuildTarget *target) {
 
 void print_build_options() {
     printf("  -h, --help                Show this help message\n"
+           "  -v, --verbose             Show verbose output\n"
            "  -r, --release             Build with release profile\n"
            "  -d, --debug (default)     Build with debug profile\n");
 }
@@ -57,6 +58,7 @@ const char *profile_name(Profile profile) {
 BuildOptions build_options_default() {
     BuildOptions options = {0};
     options.help = false;
+    options.verbose = false;
     options.profile = PROFILE_DEBUG;
     return options;
 }
@@ -69,6 +71,8 @@ bool build_options_parse(BuildOptions *options, int argc, char **argv,
 
         if (arg_is(arg, "-h", "--help")) {
             options->help = true;
+        } else if (arg_is(arg, "-v", "--verbose")) {
+            options->verbose = true;
         } else if (arg_is(arg, "-r", "--release")) {
             options->profile = PROFILE_RELEASE;
         } else if (arg_is(arg, "-d", "--debug")) {
@@ -209,13 +213,18 @@ bool build_target(const BuildOptions *options, const BuildTarget *target,
                 continue;
 
             char depoutdir[256];
-            snprintf(depoutdir, sizeof(depoutdir), "lute-cache/deps/out/%s",
-                     dep->id);
+            snprintf(depoutdir, sizeof(depoutdir), "lute-cache/deps/out/%s/%s",
+                     profile_name(options->profile), dep->id);
 
             args_push(&args, "-L");
             args_push(&args, depoutdir);
             args_push(&args, "-l");
             args_push(&args, dep->name);
+        }
+
+        if (options->verbose) {
+            printf("Executing: ");
+            args_print(&args);
         }
 
         bool success = args_exec(&args) == 0;
@@ -241,7 +250,7 @@ bool build_target(const BuildOptions *options, const BuildTarget *target,
         args_push(&args, objs);
 
         vec_foreach(&target->packages, package) {
-            args_push(&args, package->libs);
+            args_push(&args, package->links);
         }
 
         vec_foreach(&target->deps, dep) {
@@ -253,6 +262,11 @@ bool build_target(const BuildOptions *options, const BuildTarget *target,
                      dep->id, dep->name);
 
             args_push(&args, deplib);
+        }
+
+        if (options->verbose) {
+            printf("Executing: ");
+            args_print(&args);
         }
 
         bool success = args_exec(&args) == 0;
@@ -310,6 +324,11 @@ bool build_target(const BuildOptions *options, const BuildTarget *target,
             args_push(&args, depoutdir);
             args_push(&args, "-l");
             args_push(&args, dep->name);
+        }
+
+        if (options->verbose) {
+            printf("Executing: ");
+            args_print(&args);
         }
 
         bool success = args_exec(&args) == 0;
@@ -397,6 +416,11 @@ bool build_objects(const BuildOptions *options, const BuildTarget *target,
             args_push(&args, "-Wextra");
         if (target->warn & Werror)
             args_push(&args, "-Werror");
+
+        if (options->verbose) {
+            printf("Executing: ");
+            args_print(&args);
+        }
 
         bool success = args_exec(&args) == 0;
         args_free(&args);

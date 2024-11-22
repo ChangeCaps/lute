@@ -12,6 +12,7 @@ typedef struct BuildPackage {
     char *name;
     char *cflags;
     char *libs;
+    char *links;
 } BuildPackage;
 
 bool build_package_init(BuildPackage *package, const char *name);

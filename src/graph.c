@@ -40,10 +40,12 @@ static char *pkg_config_flags(const char *flags, const char *name) {
 bool build_package_init(BuildPackage *package, const char *name) {
     package->cflags = pkg_config_flags("cflags", name);
     package->libs = pkg_config_flags("libs", name);
+    package->links = pkg_config_flags("libs-only-l", name);
 
-    if (!package->cflags || !package->libs) {
+    if (!package->cflags || !package->libs || !package->links) {
         free(package->cflags);
         free(package->libs);
+        free(package->links);
         return false;
     }
 

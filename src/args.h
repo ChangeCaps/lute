@@ -12,6 +12,7 @@ void args_free(Args *args);
 
 void args_push(Args *args, const char *arg);
 char *args_join(Args *args);
+void args_print(Args *args);
 int args_exec(Args *args);
 
 // This file is part of Lute.
