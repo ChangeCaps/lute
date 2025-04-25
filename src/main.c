@@ -10,6 +10,7 @@
 #include "argp.h"
 #include "build.h"
 #include "clean.h"
+#include "init.h"
 #include "install.h"
 #include "list.h"
 #include "log.h"
@@ -57,7 +58,7 @@ int main(int argc, char **argv) {
         } else if (arg_is(arg, NULL, "install")) {
             return install_command(argc, argv, &argi);
         } else if (arg_is(arg, NULL, "init")) {
-            return list_command(argc, argv, &argi);
+            return init_command(argc, argv, &argi);
         } else if (arg_is(arg, NULL, "clean")) {
             return clean_command(argc, argv, &argi);
         } else if (arg_is(arg, NULL, "list")) {
