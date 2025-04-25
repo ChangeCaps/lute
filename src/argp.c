@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "argp.h"
+#include "log.h"
 
 bool arg_is(const char *arg, const char *short_name, const char *long_name) {
     bool is_short = short_name && strcmp(arg, short_name) == 0;
@@ -26,13 +27,13 @@ BuildTarget *select_target(const BuildGraph *graph, int argc, char **argv,
         (*argi)++;
 
         if (!target) {
-            printf("Target %s not found\n", argv[2]);
+            ERROR("Target %s not found\n", argv[2]);
             return NULL;
         }
     }
 
     if (!target && graph->root->targets.len != 1) {
-        printf("No target specified and no default target found\n");
+        ERROR("No target specified and no default target found\n");
         return NULL;
     } else if (!target) {
         target = graph->root->targets.data;

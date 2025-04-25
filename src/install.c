@@ -5,30 +5,31 @@
 
 #include "argp.h"
 #include "build.h"
+#include "fs.h"
 #include "install.h"
-#include "util.h"
+#include "log.h"
 
 void print_install_usage() {
-    printf("Usage: lute install [target] [options]\n"
-           "\n"
-           "Options:\n"
-           "  -h, --help                Show this help message\n"
-           "  -n, --dry                 "
-           "Only print actions, without performing them\n"
-           "      --no-build            Do not build the target\n"
-           "      --bin-path            Set the binary installation path\n"
-           "      --lib-path            Set the library installation path\n"
-           "      --include-path        Set the include installation path\n"
-           "      --pkg-config-path     Set the pkg-config installation path\n"
-           "\n"
-           "Platform-specific options:\n"
-           "      --nix                 Install on a NixOS system"
-           ", use this in the installPhase of a derivation\n");
+    INFO("Usage: lute install [target] [options]\n"
+         "\n"
+         "Options:\n"
+         "  -h, --help                Show this help message\n"
+         "  -n, --dry                 "
+         "Only print actions, without performing them\n"
+         "      --no-build            Do not build the target\n"
+         "      --bin-path            Set the binary installation path\n"
+         "      --lib-path            Set the library installation path\n"
+         "      --include-path        Set the include installation path\n"
+         "      --pkg-config-path     Set the pkg-config installation path\n"
+         "\n"
+         "Platform-specific options:\n"
+         "      --nix                 Install on a NixOS system"
+         ", use this in the installPhase of a derivation\n");
 }
 
 void print_install_help() {
-    printf("Install a target\n");
-    printf("Version: %s\n\n", VERSION);
+    INFO("Install a target\n");
+    INFO("Version: %s\n\n", VERSION);
     print_install_usage();
 }
 
@@ -92,7 +93,7 @@ static bool set_nix_paths(InstallOptions *options, const BuildTarget *target) {
 
     if (target->output & BINARY) {
         if (!out) {
-            printf("Nix environment variable 'out' not set\n");
+            ERROR("Nix environment variable 'out' not set\n");
             return false;
         }
 
@@ -104,7 +105,7 @@ static bool set_nix_paths(InstallOptions *options, const BuildTarget *target) {
 
     if (target->output & (STATIC | SHARED)) {
         if (!lib) {
-            printf("Nix environment variable 'lib' not set\n");
+            ERROR("Nix environment variable 'lib' not set\n");
             return false;
         }
 
@@ -113,7 +114,7 @@ static bool set_nix_paths(InstallOptions *options, const BuildTarget *target) {
 
     if (target->output & (STATIC | SHARED | HEADER)) {
         if (!dev) {
-            printf("Nix environment variable 'dev' not set\n");
+            ERROR("Nix environment variable 'dev' not set\n");
             return false;
         }
 
@@ -146,7 +147,7 @@ int install_command(int argc, char **argv, int *argi) {
     InstallOptions options = install_options_default();
 
     if (!install_options_parse(&options, argc, argv, argi)) {
-        printf("\n");
+        INFO("\n");
         print_install_usage();
         return 1;
     }
@@ -173,7 +174,7 @@ int install_command(int argc, char **argv, int *argi) {
         return 1;
     }
 
-    printf("Installing target %s\n", target->name);
+    INFO("Installing target %s\n", target->name);
 
     if (target->output & BINARY) {
         install_binary(&options, target, outdir);
@@ -202,7 +203,7 @@ bool install_binary(const InstallOptions *options, const BuildTarget *target,
                     const char *outdir) {
 
     if (!make_dirs(options->bin_path)) {
-        printf("Failed to create directory %s\n", options->bin_path);
+        ERROR("Failed to create directory %s\n", options->bin_path);
         return false;
     }
 
@@ -213,7 +214,7 @@ bool install_binary(const InstallOptions *options, const BuildTarget *target,
     char binpath[256];
     snprintf(binpath, sizeof(binpath), "%s/%s", outdir, target->name);
 
-    printf("Installing binary to %s\n", outpath);
+    INFO("Installing binary to %s\n", outpath);
 
     if (!options->dry) {
         if (!copy_file(binpath, outpath)) {
@@ -228,7 +229,7 @@ bool install_static(const InstallOptions *options, const BuildTarget *target,
                     const char *outdir) {
 
     if (!make_dirs(options->lib_path)) {
-        printf("Failed to create directory %s\n", options->lib_path);
+        ERROR("Failed to create directory %s\n", options->lib_path);
         return false;
     }
 
@@ -239,7 +240,7 @@ bool install_static(const InstallOptions *options, const BuildTarget *target,
     char libpath[256];
     snprintf(libpath, sizeof(libpath), "%s/lib%s.a", outdir, target->name);
 
-    printf("Installing static library to %s\n", outpath);
+    INFO("Installing static library to %s\n", outpath);
 
     if (!options->dry) {
         if (!copy_file(libpath, outpath)) {
@@ -254,7 +255,7 @@ bool install_shared(const InstallOptions *options, const BuildTarget *target,
                     const char *outdir) {
 
     if (!make_dirs(options->lib_path)) {
-        printf("Failed to create directory %s\n", options->lib_path);
+        ERROR("Failed to create directory %s\n", options->lib_path);
         return false;
     }
 
@@ -265,7 +266,7 @@ bool install_shared(const InstallOptions *options, const BuildTarget *target,
     char libpath[256];
     snprintf(libpath, sizeof(libpath), "%s/lib%s.so", outdir, target->name);
 
-    printf("Installing shared library to %s\n", outpath);
+    INFO("Installing shared library to %s\n", outpath);
 
     if (!options->dry) {
         if (!copy_file(libpath, outpath)) {
@@ -281,7 +282,7 @@ bool install_headers(const InstallOptions *options, const BuildTarget *target,
     (void)outdir;
 
     if (!make_dirs(options->include_path)) {
-        printf("Failed to create directory %s\n", options->include_path);
+        ERROR("Failed to create directory %s\n", options->include_path);
         return false;
     }
 
@@ -290,11 +291,11 @@ bool install_headers(const InstallOptions *options, const BuildTarget *target,
              target->name);
 
     if (!make_dirs(incpath)) {
-        printf("Failed to create directory %s\n", incpath);
+        ERROR("Failed to create directory %s\n", incpath);
         return false;
     }
 
-    printf("Installing headers to %s\n", incpath);
+    INFO("Installing headers to %s\n", incpath);
 
     if (!options->dry) {
         vec_foreach(&target->includes, include) {
@@ -312,7 +313,7 @@ bool install_pkg_config(const InstallOptions *options,
     (void)outdir;
 
     if (!make_dirs(options->pkg_config_path)) {
-        printf("Failed to create directory %s\n", options->pkg_config_path);
+        ERROR("Failed to create directory %s\n", options->pkg_config_path);
         return false;
     }
 
@@ -324,12 +325,12 @@ bool install_pkg_config(const InstallOptions *options,
     snprintf(incpath, sizeof(incpath), "%s/%s", options->include_path,
              target->name);
 
-    printf("Installing pkg-config file to %s\n", outpath);
+    INFO("Installing pkg-config file to %s\n", outpath);
 
     FILE *file = fopen(outpath, "w");
 
     if (!file) {
-        printf("Failed to open file %s\n", outpath);
+        ERROR("Failed to open file %s\n", outpath);
         return false;
     }
 

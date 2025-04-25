@@ -8,7 +8,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "util.h"
+#include "fs.h"
 
 bool file_exists(const char *path) {
     struct stat st = {0};

@@ -6,17 +6,18 @@
 #include "args.h"
 #include "build.h"
 #include "graph.h"
+#include "log.h"
 
 void print_run_usage() {
-    printf("Usage: lute run [target] [options] [-- [args]]\n"
-           "\n"
-           "Options:\n");
+    INFO("Usage: lute run [target] [options] [-- [args]]\n"
+         "\n"
+         "Options:\n");
     print_build_options();
 }
 
 void print_run_help() {
-    printf("Build and run a target\n");
-    printf("Version: %s\n\n", VERSION);
+    INFO("Build and run a target\n");
+    INFO("Version: %s\n\n", VERSION);
     print_run_usage();
 }
 
@@ -36,7 +37,7 @@ int run_command(int argc, char **argv, int *argi) {
     BuildOptions options = build_options_default();
 
     if (!build_options_parse(&options, argc, argv, argi)) {
-        printf("\n");
+        INFO("\n");
         print_run_usage();
         return 1;
     }
@@ -51,7 +52,7 @@ int run_command(int argc, char **argv, int *argi) {
              profile_name(options.profile), target->name);
 
     if (!build_target(&options, target, BINARY, outdir)) {
-        printf("Build of target %s failed, exiting\n", target->name);
+        ERROR("Build of target %s failed, exiting\n", target->name);
         return 1;
     }
 

@@ -5,9 +5,10 @@
 #include <dirent.h>
 #include <lute/build.h>
 
+#include "fs.h"
 #include "graph.h"
 #include "load.h"
-#include "util.h"
+#include "log.h"
 
 static char *pkg_config_flags(const char *flags, const char *name) {
     char cmd[512];
@@ -16,13 +17,13 @@ static char *pkg_config_flags(const char *flags, const char *name) {
     FILE *fp = popen(cmd, "r");
 
     if (!fp) {
-        printf("Error: Could not run pkg-config\n");
+        ERROR("Error: Could not run pkg-config\n");
         return NULL;
     }
 
     char buffer[4096];
     if (!fgets(buffer, sizeof(buffer), fp)) {
-        printf("Error: Could not read pkg-config output\n");
+        ERROR("Error: Could not read pkg-config output\n");
         pclose(fp);
         return NULL;
     }
@@ -156,7 +157,7 @@ static char *build_add_path(BuildGraph *graph, const char *path) {
     char *real = realpath(path, NULL);
 
     if (!real) {
-        printf("Error: Could not find path %s\n", path);
+        ERROR("Error: Could not find path %s\n", path);
         return NULL;
     }
 
@@ -170,7 +171,7 @@ static bool build_add_source(BuildGraph *graph, const char *path,
                              Paths *paths) {
 
     if (!file_exists(path)) {
-        printf("Error: Could not find source %s\n", path);
+        ERROR("Error: Could not find source %s\n", path);
         return false;
     }
 
@@ -188,7 +189,7 @@ static bool build_add_source(BuildGraph *graph, const char *path,
     DIR *dir = opendir(path);
 
     if (!dir) {
-        printf("Error: Could not open directory %s\n", path);
+        ERROR("Error: Could not open directory %s\n", path);
         return false;
     }
 
@@ -336,7 +337,7 @@ static bool fetch_dep(const char *url, const char *path) {
     free(cmd);
 
     if (!success) {
-        printf("Error: Could not fetch dep %s\n", url);
+        ERROR("Error: Could not fetch dep %s\n", url);
     }
 
     return success;
@@ -381,8 +382,8 @@ bool build_graph_load_deps(BuildGraph *graph, BuildNode *node) {
 
             // if dep target could not be found, return false
             if (!dep_target) {
-                printf("Error: Dependency %s does not have target %s\n",
-                       dep->url, dep->name);
+                ERROR("Error: Dependency %s does not have target %s\n",
+                      dep->url, dep->name);
                 return false;
             }
 

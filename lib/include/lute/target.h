@@ -9,7 +9,7 @@
 #include "vector.h"
 
 // Outputs of a target.
-typedef enum Output {
+typedef enum Outputs {
     // A binary target.
     BINARY = 1 << 0,
 
@@ -22,11 +22,12 @@ typedef enum Output {
     // A header-only library target.
     HEADER = 1 << 3,
 
+    // A library target, shorthand for `STATIC | SHARED`.
     LIBRARY = STATIC | SHARED,
 } Output;
 
-// Warning flags.
-typedef enum WarnFlag {
+// Warning flags of a target.
+typedef enum Warnings {
     // Enable all warnings.
     Wall = 1 << 0,
 
@@ -37,7 +38,7 @@ typedef enum WarnFlag {
     Werror = 1 << 2,
 } WarnFlags;
 
-// Languages of a target.
+// Language of a target.
 typedef enum Language {
     // The C language.
     C = 0,

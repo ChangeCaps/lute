@@ -5,8 +5,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "fs.h"
 #include "load.h"
-#include "util.h"
+#include "log.h"
 
 static bool get_lute_build_flags(char **cflags, char **libs) {
     const char *env_cflags = getenv("LUTE_CFLAGS");
@@ -29,7 +30,7 @@ static bool compile_build(const char *build_path, const char *out_path) {
     char *libs;
 
     if (!get_lute_build_flags(&cflags, &libs)) {
-        printf("Error: LUTE_CFLAGS and LUTE_LIBS not set\n");
+        ERROR("Error: LUTE_CFLAGS and LUTE_LIBS not set\n");
         return false;
     }
 
@@ -44,8 +45,8 @@ static bool compile_build(const char *build_path, const char *out_path) {
     vec_free(&args);
 
     if (system(cmd) != 0) {
-        printf("Error: Could not run clang\n");
-        printf("Command: %s\n", cmd);
+        ERROR("Error: Could not run clang\n");
+        ERROR("Command: %s\n", cmd);
 
         free(cflags);
         free(libs);
@@ -63,7 +64,7 @@ static bool compile_build(const char *build_path, const char *out_path) {
 
 bool load_build(Build *build, const char *bpath, const char *opath) {
     if (!file_exists(bpath)) {
-        printf("Error: Build file does not exist %s\n", bpath);
+        ERROR("Error: Build file does not exist %s\n", bpath);
         return false;
     }
 
@@ -101,13 +102,13 @@ bool load_build(Build *build, const char *bpath, const char *opath) {
     free(cmd);
 
     if (!pipe) {
-        printf("Error: Could not run build\n");
+        ERROR("Error: Could not run build\n");
 
         return false;
     }
 
     if (!deserialize_build(build, pipe)) {
-        printf("Error: Could not load build file\n");
+        ERROR("Error: Could not load build file\n");
 
         return false;
     }

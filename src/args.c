@@ -1,8 +1,6 @@
 // Copyright (C) 2024  Hjalte C. Nannestad
 // See end of file for license information.
 
-#include <stdio.h>
-
 #include "args.h"
 
 Args args_new() {
@@ -23,9 +21,9 @@ void args_push(Args *args, const char *arg) {
 
 char *args_join(Args *args) { return vec_join((Vec(const char *) *)args, " "); }
 
-void args_print(Args *args) {
-    vec_foreach(args, arg) printf("%s ", arg);
-    printf("\n");
+void args_print(FILE *file, Args *args) {
+    vec_foreach(args, arg) fprintf(file, "%s ", arg);
+    fprintf(file, "\n");
 }
 
 int args_exec(Args *args) {

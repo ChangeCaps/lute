@@ -7,7 +7,8 @@
 #include "argp.h"
 #include "args.h"
 #include "build.h"
-#include "util.h"
+#include "fs.h"
+#include "log.h"
 
 static const char *get_compiler(const BuildTarget *target) {
     char *cc = getenv("CC");
@@ -27,22 +28,22 @@ static const char *get_compiler(const BuildTarget *target) {
 }
 
 void print_build_options() {
-    printf("  -h, --help                Show this help message\n"
-           "  -v, --verbose             Show verbose output\n"
-           "  -r, --release             Build with release profile\n"
-           "  -d, --debug (default)     Build with debug profile\n");
+    INFO("  -h, --help                Show this help message\n"
+         "  -v, --verbose             Show verbose output\n"
+         "  -r, --release             Build with release profile\n"
+         "  -d, --debug (default)     Build with debug profile\n");
 }
 
 void print_build_usage() {
-    printf("Usage: lute build [target] [options]\n"
-           "\n"
-           "Options:\n");
+    INFO("Usage: lute build [target] [options]\n"
+         "\n"
+         "Options:\n");
     print_build_options();
 }
 
 void print_build_help() {
-    printf("Build a target\n");
-    printf("Version: %s\n\n", VERSION);
+    INFO("Build a target\n");
+    INFO("Version: %s\n\n", VERSION);
     print_build_usage();
 }
 
@@ -80,7 +81,7 @@ bool build_options_parse(BuildOptions *options, int argc, char **argv,
         } else if (arg_is(arg, "--", NULL)) {
             break;
         } else {
-            printf("Unknown option: %s\n", arg);
+            ERROR("Unknown option: %s\n", arg);
             return false;
         }
     }
@@ -104,7 +105,7 @@ int build_command(int argc, char **argv, int *argi) {
     BuildOptions options = build_options_default();
 
     if (!build_options_parse(&options, argc, argv, argi)) {
-        printf("\n");
+        INFO("\n");
         print_build_usage();
         return 1;
     }
@@ -119,7 +120,7 @@ int build_command(int argc, char **argv, int *argi) {
              profile_name(options.profile), target->name);
 
     if (!build_target(&options, target, target->output, outdir)) {
-        printf("Build of target %s failed, exiting\n", target->name);
+        ERROR("Build of target %s failed, exiting\n", target->name);
         return 1;
     }
 
@@ -128,14 +129,14 @@ int build_command(int argc, char **argv, int *argi) {
 
 bool build_target(const BuildOptions *options, const BuildTarget *target,
                   Output output, const char *outdir) {
-    printf("Building target %s", target->name);
+    INFO("Building target %s", target->name);
 
     switch (options->profile) {
     case PROFILE_DEBUG:
-        printf("[debug]\n");
+        INFO("[debug]\n");
         break;
     case PROFILE_RELEASE:
-        printf("[release]\n");
+        INFO("[release]\n");
         break;
     }
 
@@ -155,7 +156,7 @@ bool build_target(const BuildOptions *options, const BuildTarget *target,
     const char *compiler = get_compiler(target);
 
     if (!compiler) {
-        printf("Error: No compiler found\n");
+        ERROR("Error: No compiler found\n");
         return false;
     }
 
@@ -176,7 +177,7 @@ bool build_target(const BuildOptions *options, const BuildTarget *target,
     vec_free(&objects);
 
     if (target->output & output & BINARY) {
-        printf("Building binary %s\n", target->name);
+        INFO("Building binary %s\n", target->name);
 
         char binpath[256];
         snprintf(binpath, sizeof(binpath), "%s/%s", outdir, target->name);
@@ -223,21 +224,21 @@ bool build_target(const BuildOptions *options, const BuildTarget *target,
         }
 
         if (options->verbose) {
-            printf("Executing: ");
-            args_print(&args);
+            INFO("Executing: ");
+            args_print(stderr, &args);
         }
 
         bool success = args_exec(&args) == 0;
         args_free(&args);
 
         if (!success) {
-            printf("Error: Could not build binary %s\n", target->name);
+            ERROR("Error: Could not build binary %s\n", target->name);
             return false;
         }
     }
 
     if (target->output & output & STATIC) {
-        printf("Building static library %s\n", target->name);
+        INFO("Building static library %s\n", target->name);
 
         char libpath[256];
         snprintf(libpath, sizeof(libpath), "%s/lib%s.a", outdir, target->name);
@@ -265,21 +266,21 @@ bool build_target(const BuildOptions *options, const BuildTarget *target,
         }
 
         if (options->verbose) {
-            printf("Executing: ");
-            args_print(&args);
+            INFO("Executing: ");
+            args_print(stderr, &args);
         }
 
         bool success = args_exec(&args) == 0;
         args_free(&args);
 
         if (!success) {
-            printf("Error: Could not build static library %s\n", target->name);
+            ERROR("Error: Could not build static library %s\n", target->name);
             return false;
         }
     }
 
     if (target->output & output & SHARED) {
-        printf("Building shared library %s\n", target->name);
+        INFO("Building shared library %s\n", target->name);
 
         char libpath[256];
         snprintf(libpath, sizeof(libpath), "%s/lib%s.so", outdir, target->name);
@@ -327,15 +328,15 @@ bool build_target(const BuildOptions *options, const BuildTarget *target,
         }
 
         if (options->verbose) {
-            printf("Executing: ");
-            args_print(&args);
+            INFO("Executing: ");
+            args_print(stderr, &args);
         }
 
         bool success = args_exec(&args) == 0;
         args_free(&args);
 
         if (!success) {
-            printf("Error: Could not build shared library %s\n", target->name);
+            ERROR("Error: Could not build shared library %s\n", target->name);
             return false;
         }
     }
@@ -355,7 +356,7 @@ static void push_includes(Args *args, const BuildTarget *target) {
 bool build_objects(const BuildOptions *options, const BuildTarget *target,
                    const char *outdir) {
     if (!make_dirs(outdir)) {
-        printf("Error: Could not create output directory\n");
+        ERROR("Error: Could not create output directory\n");
 
         return false;
     }
@@ -364,7 +365,7 @@ bool build_objects(const BuildOptions *options, const BuildTarget *target,
     const char *compiler = get_compiler(target);
 
     if (!compiler) {
-        printf("Error: No compiler found\n");
+        ERROR("Error: No compiler found\n");
         return false;
     }
 
@@ -378,7 +379,7 @@ bool build_objects(const BuildOptions *options, const BuildTarget *target,
         if (!build_should_compile_object(object))
             continue;
 
-        printf("Compiling %s\n", source);
+        INFO("Compiling %s\n", source);
 
         Args args = args_new();
         args_push(&args, compiler);
@@ -418,15 +419,15 @@ bool build_objects(const BuildOptions *options, const BuildTarget *target,
             args_push(&args, "-Werror");
 
         if (options->verbose) {
-            printf("Executing: ");
-            args_print(&args);
+            INFO("Executing: ");
+            args_print(stderr, &args);
         }
 
         bool success = args_exec(&args) == 0;
         args_free(&args);
 
         if (!success) {
-            printf("Error: Could not compile %s\n", source);
+            ERROR("Error: Could not compile %s\n", source);
             return false;
         }
     }
@@ -456,7 +457,7 @@ bool build_should_compile_object(const char *object) {
     char line[256];
 
     if (!fgets(line, sizeof(line), file)) {
-        printf("Error: Dependency file is empty\n");
+        ERROR("Error: Dependency file is empty\n");
 
         fclose(file);
         free(depfile);
@@ -466,7 +467,7 @@ bool build_should_compile_object(const char *object) {
     char *start = strrchr(line, ':');
 
     if (!start) {
-        printf("Error: Dependency file is malformed\n");
+        ERROR("Error: Dependency file is malformed\n");
 
         fclose(file);
         free(depfile);
@@ -476,7 +477,7 @@ bool build_should_compile_object(const char *object) {
     *start = '\0';
 
     if (strcmp(object, line) != 0) {
-        printf("Error: Dependency file does not match object file\n");
+        ERROR("Error: Dependency file does not match object file\n");
 
         fclose(file);
         free(depfile);
@@ -500,8 +501,8 @@ bool build_should_compile_object(const char *object) {
         time_t dep_modified;
 
         if (!last_modified(dep, &dep_modified)) {
-            printf("Error: Could not get last modified time of dependency %s\n",
-                   dep);
+            ERROR("Error: Could not get last modified time of dependency %s\n",
+                  dep);
 
             fclose(file);
             free(depfile);

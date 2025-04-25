@@ -5,17 +5,8 @@
 
 #include <stdio.h>
 
-#include <lute/vector.h>
-
-typedef Vec(char *) Args;
-
-Args args_new();
-void args_free(Args *args);
-
-void args_push(Args *args, const char *arg);
-char *args_join(Args *args);
-void args_print(FILE *file, Args *args);
-int args_exec(Args *args);
+#define INFO(...) fprintf(stderr, __VA_ARGS__)
+#define ERROR(...) fprintf(stderr, __VA_ARGS__)
 
 // This file is part of Lute.
 // Copyright (C) 2024  Hjalte C. Nannestad

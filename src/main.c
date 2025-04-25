@@ -12,28 +12,29 @@
 #include "clean.h"
 #include "install.h"
 #include "list.h"
+#include "log.h"
 #include "run.h"
 
 void print_lute_usage() {
-    printf("Usage: lute [options] [command]\n"
-           "\n"
-           "Options:\n"
-           "  -h, --help        Show this help message\n"
-           "  -v, --version     Show version information\n"
-           "\n"
-           "Commands:\n"
-           "  run, r            Build and run a target\n"
-           "  build, b          Build a target\n"
-           "  install           Install a target\n"
-           "  clean             Clean build artifacts\n"
-           "  list              List available targets\n"
-           "  help              Show this help message\n"
-           "  version           Show version information\n");
+    INFO("Usage: lute [options] [command]\n"
+         "\n"
+         "Options:\n"
+         "  -h, --help        Show this help message\n"
+         "  -v, --version     Show version information\n"
+         "\n"
+         "Commands:\n"
+         "  run, r            Build and run a target\n"
+         "  build, b          Build a target\n"
+         "  install           Install a target\n"
+         "  clean             Clean build artifacts\n"
+         "  list              List available targets\n"
+         "  help              Show this help message\n"
+         "  version           Show version information\n");
 }
 
 void print_lute_help() {
-    printf("Lute - A simple build system for C/C++ projects\n");
-    printf("Version: %s\n\n", VERSION);
+    INFO("Lute - A simple build system for C/C++ projects\n");
+    INFO("Version: %s\n\n", VERSION);
     print_lute_usage();
 }
 
@@ -63,10 +64,10 @@ int main(int argc, char **argv) {
             return 0;
         } else if (arg_is(arg, NULL, "version") ||
                    arg_is(arg, "-v", "--version")) {
-            printf("%s", VERSION);
+            INFO("%s", VERSION);
             return 0;
         } else {
-            printf("Unknown argument: %s\n\n", arg);
+            INFO("Unknown argument: %s\n\n", arg);
             print_lute_usage();
         }
     }
