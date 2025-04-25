@@ -99,9 +99,9 @@ int init_command(int argc, char **argv, int *argi) {
         return 1;
     }
 
-    free(cwd);
-
     INFO("Project `%s` initialized\n", name);
+
+    free(cwd);
 
     return 0;
 }
