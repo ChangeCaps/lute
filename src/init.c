@@ -119,7 +119,7 @@ bool write_build_file(InitOptions options, const char *name) {
     fprintf(file, "#include <lute/lute.h>\n");
     fprintf(file, "\n");
     fprintf(file, "void build(Build *b) {\n");
-    fprintf(file, "    Target *trg = lute_target(b, \"%s\", BINARY);\n", name);
+    fprintf(file, "    Target *trg = target(b, \"%s\", BINARY);\n", name);
     fprintf(file, "\n");
     fprintf(file, "    trg->warn = Wall | Wextra;\n");
     fprintf(file, "    trg->lang = %s;\n", lang);
