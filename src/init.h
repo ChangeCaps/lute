@@ -3,19 +3,24 @@
 
 #pragma once
 
+#include <lute/target.h>
 #include <stdbool.h>
-#include <time.h>
 
-bool file_exists(const char *path);
-bool is_dir(const char *path);
-bool make_dir(const char *path);
-bool make_dirs(const char *path);
-bool read_file(const char *path, char **data);
-bool copy_file(const char *src, const char *dst);
-bool copy_files(const char *src, const char *dst);
-bool remove_dir(const char *path);
-bool last_modified(const char *path, time_t *time);
-char *get_working_dir();
+typedef struct {
+    bool help;
+    Language lang;
+} InitOptions;
+
+InitOptions init_options_default();
+bool init_options_parse(InitOptions *options, int argc, char **argv, int *argi);
+
+void print_init_usage();
+void print_init_help();
+
+int init_command(int argc, char **argv, int *argi);
+
+bool write_build_file(InitOptions options, const char *name);
+bool write_gitignore_file();
 
 // This file is part of Lute.
 // Copyright (C) 2024  Hjalte C. Nannestad

@@ -143,6 +143,8 @@ bool last_modified(const char *path, time_t *time) {
     return false;
 }
 
+char *get_working_dir() { return getcwd(NULL, 0); }
+
 // This file is part of Lute.
 // Copyright (C) 2024  Hjalte C. Nannestad
 //

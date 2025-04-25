@@ -26,6 +26,7 @@ void print_lute_usage() {
          "  run, r            Build and run a target\n"
          "  build, b          Build a target\n"
          "  install           Install a target\n"
+         "  init              Initialize a new Lute project\n"
          "  clean             Clean build artifacts\n"
          "  list              List available targets\n"
          "  help              Show this help message\n"
@@ -55,6 +56,8 @@ int main(int argc, char **argv) {
             return build_command(argc, argv, &argi);
         } else if (arg_is(arg, NULL, "install")) {
             return install_command(argc, argv, &argi);
+        } else if (arg_is(arg, NULL, "init")) {
+            return list_command(argc, argv, &argi);
         } else if (arg_is(arg, NULL, "clean")) {
             return clean_command(argc, argv, &argi);
         } else if (arg_is(arg, NULL, "list")) {
